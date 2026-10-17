@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Pedido de Indumentaria</title>
 <style>
-  /* ===================== CSS ===================== */
+  /* ===================== CSS (estilo tipo Tally / tu captura) ===================== */
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
   :root{
@@ -51,7 +51,6 @@
   .dropzone:hover,.dropzone.drag{background:var(--bg-hover); border-color:#9ca3af;}
   .dropzone svg{display:block; margin:0 auto 8px; color:#9ca3af;}
   .dropzone .hint{font-size:12px; margin-top:8px;}
-  .dropzone a{color:#6b7280;}
   .lista-archivos{margin-top:10px; display:flex; flex-wrap:wrap; gap:6px;}
   .chip{background:#f3f4f6; border:1px solid var(--borde); border-radius:6px;
     padding:3px 8px; font-size:12px; display:inline-flex; gap:6px; align-items:center;}
@@ -86,8 +85,8 @@
   @media(max-width:680px){
     .thead{display:none;}
     .fila{grid-template-columns:1fr 1fr; }
-    .fila > *:nth-child(4){grid-column:1 / -1;}      /* Nombre ancho completo */
-    .fila > *:nth-child(5){grid-column:1 / span 1;}  /* Cantidad */
+    .fila > *:nth-child(4){grid-column:1 / -1;}
+    .fila > *:nth-child(5){grid-column:1 / span 1;}
     .fila > .btn-quitar{grid-column:2 / -1; justify-self:end;}
   }
 
@@ -98,16 +97,29 @@
   .btn-line:disabled{opacity:.5; cursor:not-allowed;}
   .contador{color:var(--texto-suave); font-size:13px;}
 
-  .total-box{display:flex; justify-content:space-between; align-items:center;
-    border-top:1px solid #e5e7eb; margin-top:18px; padding-top:14px; font-weight:700; font-size:18px;}
-  .total-box #total{font-variant-numeric:tabular-nums;}
+  /* ===== Desglose de pago (total / seña / saldo) ===== */
+  .desglose{border:1px solid #e5e7eb; border-radius:10px; padding:12px 16px; margin-top:16px; background:#fff;}
+  .lin-total{display:flex; justify-content:space-between; align-items:center; gap:10px;
+    padding:7px 0; font-size:14px;}
+  .lin-total .lbl{display:flex; align-items:center; gap:8px; flex-wrap:wrap; color:var(--texto);}
+  .lin-total .val{font-weight:600; font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .lin-total.destacado{background:#f3f4f6; margin:4px -8px; padding:10px 8px; border-radius:8px;}
+  .lin-total.destacado .val{font-weight:700; font-size:16px;}
+  .tag-pago{background:var(--borde-fuerte); color:#fff; border-radius:999px; font-size:10px;
+    font-weight:700; padding:2px 8px; letter-spacing:.03em;}
+  .tag-final{background:var(--badge); color:var(--badge-txt); border-radius:999px; font-size:10px;
+    font-weight:700; padding:2px 8px; letter-spacing:.03em;}
+  .nota-envio{display:flex; gap:8px; align-items:flex-start; margin:12px 0 0; font-size:12.5px;
+    color:var(--texto-suave); background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px;
+    padding:10px 12px; line-height:1.5;}
+  .nota-envio svg{flex:none; margin-top:1px; color:#9ca3af;}
 
   .btn-enviar{margin-top:24px; background:var(--borde-fuerte); color:#fff; border:none;
     border-radius:8px; padding:13px 22px; font:inherit; font-weight:600; cursor:pointer; width:100%;}
   .btn-enviar:hover{background:#000;}
   .btn-enviar:disabled{opacity:.6; cursor:not-allowed;}
 
-  .msg{margin-top:16px; padding:12px 14px; border-radius:8px; display:none;}
+  .msg{margin-top:16px; padding:12px 14px; border-radius:8px; display:none; white-space:pre-line;}
   .msg.ok{display:block; background:var(--exito-bg); border:1px solid var(--exito-borde); color:#065f46;}
   .msg.err{display:block; background:var(--error-bg); border:1px solid var(--error-borde); color:#991b1b;}
 </style>
@@ -115,7 +127,7 @@
 <body>
 <div class="wrap">
   <h1>Pedido de Indumentaria</h1>
-  <p class="sub">Completá tus datos, cargá el diseño y detallá cada prenda. El total se calcula solo.</p>
+  <p class="sub">Completá tus datos, cargá el diseño y detallá cada prenda. El total y la seña se calculan solos.</p>
 
   <form id="form" novalidate>
     <!-- Datos del cliente -->
@@ -201,7 +213,26 @@
         <button type="button" class="btn-line" id="btnAgregar">+ Agregar línea</button>
         <span class="contador" id="contador"></span>
       </div>
-      <div class="total-box"><span>Total del pedido</span><span id="total">$0</span></div>
+
+      <!-- Desglose de pago -->
+      <div class="desglose">
+        <div class="lin-total">
+          <span class="lbl">Total del pedido (mercadería)</span>
+          <span class="val" id="total">$0</span>
+        </div>
+        <div class="lin-total destacado">
+          <span class="lbl">Seña (50%) <span class="tag-pago">A PAGAR AHORA</span></span>
+          <span class="val" id="senia">$0</span>
+        </div>
+        <div class="lin-total">
+          <span class="lbl">Saldo restante (50%) <span class="tag-final">PAGO FINAL</span></span>
+          <span class="val" id="saldo">$0</span>
+        </div>
+        <p class="nota-envio">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          <span>El <strong>costo de envío no está incluido</strong> en el total mostrado. El envío lo abona el cliente y se paga <strong>junto con el saldo (pago final)</strong>, una vez coordinada la entrega. La producción comienza recién tras el pago de la seña.</span>
+        </p>
+      </div>
     </div>
 
     <button type="submit" class="btn-enviar" id="btnEnviar">Enviar pedido</button>
@@ -212,7 +243,7 @@
 <script>
 /* ============================ CONFIG ============================ */
 // 👉 PEGÁ ACÁ la URL de tu Web App de Apps Script (termina en /exec)
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzhoMarfgcwOSEEz3MA3vBe6UaOQhuTxTwNi0pQuc62jMtvkT1iCBfuvMNSQmXhKXOIzw/exec";
+const SCRIPT_URL = "PEGAR_ACA_LA_URL_DEL_WEB_APP/exec";
 
 // 👉 EDITÁ los precios por tipo de prenda (moneda = la que uses)
 const PRECIOS = {
@@ -225,6 +256,7 @@ const PRECIOS = {
 const MONEDA = "$";                 // prefijo de moneda
 const MAX_FILAS = 20;               // límite de líneas del pedido
 const MAX_MB = 10;                  // límite por archivo
+const PCT_SENIA = 0.5;              // porcentaje de seña (50%)
 
 // Opciones de los selects (deben coincidir con las claves de PRECIOS en "TIPOS")
 const TIPOS   = Object.keys(PRECIOS);
@@ -241,6 +273,14 @@ const money = n => MONEDA + Number(n||0).toLocaleString("es-AR",{maximumFraction
 const esc = s => String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const chevron = `<span class="ch"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>`;
 const opts = arr => arr.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("");
+
+// Seña redondeada HACIA ARRIBA para que el negocio no pierda centavos;
+// el saldo se obtiene restando, así seña + saldo cierra exacto con el total.
+function calcularSenaSaldo(total){
+  const sena  = Math.ceil((Number(total)||0) * PCT_SENIA);
+  const saldo = (Number(total)||0) - sena;
+  return { sena, saldo };
+}
 
 /* ============================ FILAS DINÁMICAS ============================ */
 function crearFila(){
@@ -268,7 +308,10 @@ function recalcular(){
     const cant = Math.max(0, parseInt(f.querySelector(".f-cant").value,10) || 0);
     total += (PRECIOS[tipo]||0) * cant;
   });
-  $("#total").textContent = money(total);
+  const { sena, saldo } = calcularSenaSaldo(total);
+  $("#total").textContent  = money(total);
+  $("#senia").textContent  = money(sena);
+  $("#saldo").textContent  = money(saldo);
   const n = $$("#filas .fila").length;
   $("#contador").textContent = `${n} de ${MAX_FILAS} líneas`;
   $("#btnAgregar").disabled = n >= MAX_FILAS;
@@ -348,6 +391,7 @@ $("#form").addEventListener("submit", async (e)=>{
   }
   if (!lineas.length) return mostrarMsg("err","Agregá al menos una prenda con cantidad mayor a 0.");
   const totalPedido = lineas.reduce((s,l)=>s+l.subtotal,0);
+  const { sena, saldo } = calcularSenaSaldo(totalPedido);
 
   // archivos a base64
   const btn = $("#btnEnviar"); btn.disabled = true; const txtOrig = btn.textContent; btn.textContent = "Enviando…";
@@ -361,7 +405,8 @@ $("#form").addEventListener("submit", async (e)=>{
       nombre:$("#nombre").value.trim(), telefono:$("#telefono").value.trim(), email:$("#email").value.trim(),
       direccion:$("#direccion").value.trim(), cp:$("#cp").value.trim(),
       localidad:$("#localidad").value.trim(), provincia:$("#provincia").value.trim(),
-      tipoDiseno:td.value, archivos, lineas, totalPedido
+      tipoDiseno:td.value, archivos, lineas,
+      totalPedido, sena, saldo          // <-- nuevos campos (el .gs los ignora si no los lee)
     };
 
     // ⚠️ text/plain evita el preflight CORS de Apps Script
@@ -373,7 +418,11 @@ $("#form").addEventListener("submit", async (e)=>{
     const data = await res.json().catch(()=>({ok:false,error:"Respuesta no JSON (revisá despliegue/permisos)."}));
     if (!data.ok) throw new Error(data.error || "Error desconocido del servidor.");
 
-    mostrarMsg("ok", `✅ Pedido enviado. Nº ${data.idPedido} — ${data.filas} línea(s). Total ${money(totalPedido)}.`);
+    mostrarMsg("ok",
+      `✅ Pedido enviado. Nº ${data.idPedido} — ${data.filas} línea(s).\n`+
+      `Total del pedido (mercadería): ${money(totalPedido)}\n`+
+      `Seña a pagar ahora (50%): ${money(sena)}\n`+
+      `Saldo al finalizar (+ costo de envío): ${money(saldo)}`);
     $("#form").reset(); archivosSel = []; pintarArchivos();
     $("#filas").innerHTML = ""; crearFila();
   } catch(err){
