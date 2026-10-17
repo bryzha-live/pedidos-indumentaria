@@ -66,9 +66,10 @@
     display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex:none;}
   .card:has(input:checked){border-color:var(--borde-fuerte); box-shadow:0 0 0 3px rgba(17,24,39,.08);}
 
-  /* select con chevron */
+  /* select con chevron + placeholder gris cuando está vacío */
   .select-wrap{position:relative;}
   .select-wrap select{appearance:none; -webkit-appearance:none; padding-right:32px; cursor:pointer;}
+  .select-wrap select.vacio{color:#9ca3af;}
   .select-wrap .ch{position:absolute; right:10px; top:50%; transform:translateY(-50%);
     color:#6b7280; pointer-events:none; display:flex;}
 
@@ -97,29 +98,33 @@
   .btn-line:disabled{opacity:.5; cursor:not-allowed;}
   .contador{color:var(--texto-suave); font-size:13px;}
 
-  /* ===== Desglose de pago (total / seña / saldo) ===== */
-  .desglose{border:1px solid #e5e7eb; border-radius:10px; padding:12px 16px; margin-top:16px; background:#fff;}
-  .lin-total{display:flex; justify-content:space-between; align-items:center; gap:10px;
-    padding:7px 0; font-size:14px;}
-  .lin-total .lbl{display:flex; align-items:center; gap:8px; flex-wrap:wrap; color:var(--texto);}
-  .lin-total .val{font-weight:600; font-variant-numeric:tabular-nums; white-space:nowrap;}
-  .lin-total.destacado{background:#f3f4f6; margin:4px -8px; padding:10px 8px; border-radius:8px;}
-  .lin-total.destacado .val{font-weight:700; font-size:16px;}
-  .tag-pago{background:var(--borde-fuerte); color:#fff; border-radius:999px; font-size:10px;
-    font-weight:700; padding:2px 8px; letter-spacing:.03em;}
-  .tag-final{background:var(--badge); color:var(--badge-txt); border-radius:999px; font-size:10px;
-    font-weight:700; padding:2px 8px; letter-spacing:.03em;}
-  .nota-envio{display:flex; gap:8px; align-items:flex-start; margin:12px 0 0; font-size:12.5px;
-    color:var(--texto-suave); background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px;
-    padding:10px 12px; line-height:1.5;}
-  .nota-envio svg{flex:none; margin-top:1px; color:#9ca3af;}
+  /* ===== Resumen de pago (total + anticipo + saldo) ===== */
+  .resumen{border-top:1px solid #e5e7eb; margin-top:18px; padding-top:14px;
+    display:flex; flex-direction:column; gap:8px;}
+  .res-titulo{font-weight:600; color:var(--texto-suave); font-size:12px;
+    text-transform:uppercase; letter-spacing:.04em; margin-bottom:2px;}
+  .res-linea{display:flex; justify-content:space-between; align-items:baseline; gap:10px; font-size:15px;}
+  .res-linea .lbl{display:flex; flex-direction:column;}
+  .res-linea small{font-weight:400; color:var(--texto-suave); font-size:12px;}
+  .res-total{font-weight:700; font-size:18px;}
+  .res-total span:last-child{font-variant-numeric:tabular-nums;}
+  .res-anticipo{background:var(--exito-bg); border:1px solid var(--exito-borde); border-radius:8px;
+    padding:10px 12px; color:#065f46; font-weight:700;}
+  .res-anticipo small{color:#047857;}
+  .res-anticipo span:last-child{font-variant-numeric:tabular-nums;}
+  .res-saldo{font-weight:600;}
+  .res-saldo span:last-child{font-variant-numeric:tabular-nums;}
+
+  .nota-envio{margin-top:12px; background:#fffbeb; border:1px solid #fde68a; border-radius:8px;
+    padding:11px 13px; color:#92400e; font-size:13px; line-height:1.55;}
+  .nota-envio strong{color:#78350f;}
 
   .btn-enviar{margin-top:24px; background:var(--borde-fuerte); color:#fff; border:none;
     border-radius:8px; padding:13px 22px; font:inherit; font-weight:600; cursor:pointer; width:100%;}
   .btn-enviar:hover{background:#000;}
   .btn-enviar:disabled{opacity:.6; cursor:not-allowed;}
 
-  .msg{margin-top:16px; padding:12px 14px; border-radius:8px; display:none; white-space:pre-line;}
+  .msg{margin-top:16px; padding:12px 14px; border-radius:8px; display:none;}
   .msg.ok{display:block; background:var(--exito-bg); border:1px solid var(--exito-borde); color:#065f46;}
   .msg.err{display:block; background:var(--error-bg); border:1px solid var(--error-borde); color:#991b1b;}
 </style>
@@ -127,7 +132,7 @@
 <body>
 <div class="wrap">
   <h1>Pedido de Indumentaria</h1>
-  <p class="sub">Completá tus datos, cargá el diseño y detallá cada prenda. El total y la seña se calculan solos.</p>
+  <p class="sub">Completá tus datos, cargá el diseño y detallá cada prenda. El total y el anticipo se calculan solos.</p>
 
   <form id="form" novalidate>
     <!-- Datos del cliente -->
@@ -214,24 +219,26 @@
         <span class="contador" id="contador"></span>
       </div>
 
-      <!-- Desglose de pago -->
-      <div class="desglose">
-        <div class="lin-total">
-          <span class="lbl">Total del pedido (mercadería)</span>
-          <span class="val" id="total">$0</span>
+      <!-- Resumen de pago -->
+      <div class="resumen">
+        <div class="res-titulo">Resumen de pago</div>
+        <div class="res-linea res-total">
+          <span class="lbl">Total del pedido</span>
+          <span id="total">$0</span>
         </div>
-        <div class="lin-total destacado">
-          <span class="lbl">Seña (50%) <span class="tag-pago">A PAGAR AHORA</span></span>
-          <span class="val" id="senia">$0</span>
+        <div class="res-linea res-anticipo">
+          <span class="lbl">Anticipo 50%<small>a pagar para iniciar la producción</small></span>
+          <span id="anticipo">$0</span>
         </div>
-        <div class="lin-total">
-          <span class="lbl">Saldo restante (50%) <span class="tag-final">PAGO FINAL</span></span>
-          <span class="val" id="saldo">$0</span>
+        <div class="res-linea res-saldo">
+          <span class="lbl">Saldo 50%<small>a pagar al finalizar el pedido</small></span>
+          <span id="saldo">$0</span>
         </div>
-        <p class="nota-envio">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-          <span>El <strong>costo de envío no está incluido</strong> en el total mostrado. El envío lo abona el cliente y se paga <strong>junto con el saldo (pago final)</strong>, una vez coordinada la entrega. La producción comienza recién tras el pago de la seña.</span>
-        </p>
+      </div>
+
+      <div class="nota-envio">
+        📦 <strong>Importante:</strong> el costo de envío <strong>no</strong> está incluido en el total ni en el anticipo.
+        Se calcula al momento del despacho y lo abona el cliente <strong>junto con el pago final (saldo)</strong>.
       </div>
     </div>
 
@@ -243,7 +250,7 @@
 <script>
 /* ============================ CONFIG ============================ */
 // 👉 PEGÁ ACÁ la URL de tu Web App de Apps Script (termina en /exec)
-const SCRIPT_URL = "PEGAR_ACA_LA_URL_DEL_WEB_APP/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxR8bxuPQY8vmWOYJHHiUIqYGGV9HvDTjxkp8Rpd_sX2yB0K18eETTV8gHQ5Tm-fshXDw/exec";
 
 // 👉 EDITÁ los precios por tipo de prenda (moneda = la que uses)
 const PRECIOS = {
@@ -256,9 +263,9 @@ const PRECIOS = {
 const MONEDA = "$";                 // prefijo de moneda
 const MAX_FILAS = 20;               // límite de líneas del pedido
 const MAX_MB = 10;                  // límite por archivo
-const PCT_SENIA = 0.5;              // porcentaje de seña (50%)
+const PCT_ANTICIPO = 0.5;           // 50% de anticipo
 
-// Opciones de los selects (deben coincidir con las claves de PRECIOS en "TIPOS")
+// Opciones de los selects (las claves de PRECIOS alimentan el select "Tipo")
 const TIPOS   = Object.keys(PRECIOS);
 const GENEROS = ["Femenino","Masculino"];
 const TALLES  = ["40","42","44","46"];
@@ -273,30 +280,27 @@ const money = n => MONEDA + Number(n||0).toLocaleString("es-AR",{maximumFraction
 const esc = s => String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const chevron = `<span class="ch"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>`;
 const opts = arr => arr.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("");
-
-// Seña redondeada HACIA ARRIBA para que el negocio no pierda centavos;
-// el saldo se obtiene restando, así seña + saldo cierra exacto con el total.
-function calcularSenaSaldo(total){
-  const sena  = Math.ceil((Number(total)||0) * PCT_SENIA);
-  const saldo = (Number(total)||0) - sena;
-  return { sena, saldo };
-}
+// Pone/quita el estilo "gris placeholder" según si el select tiene valor
+const pintarPlaceholder = sel => sel.classList.toggle("vacio", sel.value === "");
 
 /* ============================ FILAS DINÁMICAS ============================ */
 function crearFila(){
   if ($$("#filas .fila").length >= MAX_FILAS) return;
   const div = document.createElement("div");
   div.className = "fila";
+  // Cada select arranca con un placeholder disabled+selected => queda vacío hasta que elija
   div.innerHTML = `
-    <div class="select-wrap"><select class="f-tipo">${opts(TIPOS)}</select>${chevron}</div>
-    <div class="select-wrap"><select class="f-genero">${opts(GENEROS)}</select>${chevron}</div>
-    <div class="select-wrap"><select class="f-talle">${opts(TALLES)}</select>${chevron}</div>
+    <div class="select-wrap"><select class="f-tipo"><option value="" disabled selected>Elegí tipo…</option>${opts(TIPOS)}</select>${chevron}</div>
+    <div class="select-wrap"><select class="f-genero"><option value="" disabled selected>Elegí género…</option>${opts(GENEROS)}</select>${chevron}</div>
+    <div class="select-wrap"><select class="f-talle"><option value="" disabled selected>Elegí talle…</option>${opts(TALLES)}</select>${chevron}</div>
     <textarea class="f-nombre" placeholder="Nombre / número a estampar (opcional)"></textarea>
-    <input class="f-cant" type="number" min="1" step="1" value="1" placeholder="#" />
+    <input class="f-cant" type="number" min="1" step="1" value="" placeholder="#" />
     <button type="button" class="btn-quitar" title="Quitar línea">×</button>`;
   div.querySelector(".btn-quitar").addEventListener("click",()=>{ div.remove(); recalcular(); });
   div.addEventListener("input", recalcular);
-  div.addEventListener("change", recalcular);
+  div.addEventListener("change", e=>{ if(e.target.tagName==="SELECT") pintarPlaceholder(e.target); recalcular(); });
+  // estado inicial de los placeholders
+  $$(".select-wrap select", div).forEach(pintarPlaceholder);
   $("#filas").appendChild(div);
   recalcular();
 }
@@ -304,14 +308,15 @@ function crearFila(){
 function recalcular(){
   let total = 0;
   $$("#filas .fila").forEach(f=>{
-    const tipo = f.querySelector(".f-tipo").value;
+    const tipo = f.querySelector(".f-tipo").value;          // "" si no eligió => 0
     const cant = Math.max(0, parseInt(f.querySelector(".f-cant").value,10) || 0);
-    total += (PRECIOS[tipo]||0) * cant;
+    total += (PRECIOS[tipo] || 0) * cant;
   });
-  const { sena, saldo } = calcularSenaSaldo(total);
-  $("#total").textContent  = money(total);
-  $("#senia").textContent  = money(sena);
-  $("#saldo").textContent  = money(saldo);
+  const anticipo = Math.round(total * PCT_ANTICIPO);
+  const saldo    = total - anticipo;                         // cierra exacto con el total
+  $("#total").textContent    = money(total);
+  $("#anticipo").textContent = money(anticipo);
+  $("#saldo").textContent    = money(saldo);
   const n = $$("#filas .fila").length;
   $("#contador").textContent = `${n} de ${MAX_FILAS} líneas`;
   $("#btnAgregar").disabled = n >= MAX_FILAS;
@@ -376,22 +381,37 @@ $("#form").addEventListener("submit", async (e)=>{
   if (!td) return mostrarMsg("err","Elegí el tipo de diseño (A, B o C).");
   if (!archivosSel.length) return mostrarMsg("err","Adjuntá al menos un archivo de diseño (PDF o PNG).");
 
-  // armar líneas
+  // ----- armado y validación de líneas (filas vacías se ignoran; parciales dan error por nº) -----
+  const filasDom = $$("#filas .fila");
   const lineas = [];
-  for (const f of $$("#filas .fila")){
-    const tipo = f.querySelector(".f-tipo").value;
-    const cant = parseInt(f.querySelector(".f-cant").value,10) || 0;
-    if (cant <= 0) continue;
+  for (let i=0;i<filasDom.length;i++){
+    const f      = filasDom[i];
+    const tipo   = f.querySelector(".f-tipo").value;
+    const genero = f.querySelector(".f-genero").value;
+    const talle  = f.querySelector(".f-talle").value;
+    const nombre = f.querySelector(".f-nombre").value.trim();
+    const cantRaw= f.querySelector(".f-cant").value.trim();
+
+    if (tipo === ""){
+      // fila sin tipo: si tiene CUALQUIER otro dato cargado, avisamos; si no, es una fila sobra => ignorar
+      const algoMas = genero!=="" || talle!=="" || cantRaw!=="" || nombre!=="";
+      if (algoMas) return mostrarMsg("err",`La línea ${i+1} no tiene tipo de prenda elegido. Completala o vaciála por completo.`);
+      continue;
+    }
+    // tipo elegido => el resto de la prenda es obligatorio
+    if (!genero) return mostrarMsg("err",`Elegí el género en la línea ${i+1}.`);
+    if (!talle)  return mostrarMsg("err",`Elegí el talle en la línea ${i+1}.`);
+    const cant = parseInt(cantRaw,10);
+    if (!cant || cant < 1) return mostrarMsg("err",`Poné una cantidad válida (mínimo 1) en la línea ${i+1}.`);
+
     const pu = PRECIOS[tipo] || 0;
-    lineas.push({
-      tipo, genero:f.querySelector(".f-genero").value, talle:f.querySelector(".f-talle").value,
-      nombre:f.querySelector(".f-nombre").value.trim(), cantidad:cant,
-      precioUnitario:pu, subtotal:pu*cant
-    });
+    lineas.push({ tipo, genero, talle, nombre, cantidad:cant, precioUnitario:pu, subtotal:pu*cant });
   }
-  if (!lineas.length) return mostrarMsg("err","Agregá al menos una prenda con cantidad mayor a 0.");
+  if (!lineas.length) return mostrarMsg("err","Cargá al menos una prenda completa (tipo, género, talle y cantidad).");
+
   const totalPedido = lineas.reduce((s,l)=>s+l.subtotal,0);
-  const { sena, saldo } = calcularSenaSaldo(totalPedido);
+  const anticipo    = Math.round(totalPedido * PCT_ANTICIPO);
+  const saldo       = totalPedido - anticipo;
 
   // archivos a base64
   const btn = $("#btnEnviar"); btn.disabled = true; const txtOrig = btn.textContent; btn.textContent = "Enviando…";
@@ -406,7 +426,7 @@ $("#form").addEventListener("submit", async (e)=>{
       direccion:$("#direccion").value.trim(), cp:$("#cp").value.trim(),
       localidad:$("#localidad").value.trim(), provincia:$("#provincia").value.trim(),
       tipoDiseno:td.value, archivos, lineas,
-      totalPedido, sena, saldo          // <-- nuevos campos (el .gs los ignora si no los lee)
+      totalPedido, anticipo, saldo          // <- anticipo/saldo viajan en el JSON (el .gs actual los ignora sin romper)
     };
 
     // ⚠️ text/plain evita el preflight CORS de Apps Script
@@ -418,13 +438,9 @@ $("#form").addEventListener("submit", async (e)=>{
     const data = await res.json().catch(()=>({ok:false,error:"Respuesta no JSON (revisá despliegue/permisos)."}));
     if (!data.ok) throw new Error(data.error || "Error desconocido del servidor.");
 
-    mostrarMsg("ok",
-      `✅ Pedido enviado. Nº ${data.idPedido} — ${data.filas} línea(s).\n`+
-      `Total del pedido (mercadería): ${money(totalPedido)}\n`+
-      `Seña a pagar ahora (50%): ${money(sena)}\n`+
-      `Saldo al finalizar (+ costo de envío): ${money(saldo)}`);
+    mostrarMsg("ok", `✅ Pedido enviado. Nº ${data.idPedido} — ${data.filas} línea(s). Total ${money(totalPedido)} · Anticipo a pagar ahora ${money(anticipo)}.`);
     $("#form").reset(); archivosSel = []; pintarArchivos();
-    $("#filas").innerHTML = ""; crearFila();
+    $("#filas").innerHTML = ""; crearFila();   // una fila nueva, toda vacía con placeholders
   } catch(err){
     mostrarMsg("err","❌ No se pudo enviar: "+err.message);
   } finally {
@@ -434,7 +450,7 @@ $("#form").addEventListener("submit", async (e)=>{
 
 /* ============================ INIT ============================ */
 $("#btnAgregar").addEventListener("click", crearFila);
-crearFila();   // una fila inicial
+crearFila();   // una fila inicial vacía
 </script>
 </body>
 </html>
