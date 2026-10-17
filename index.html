@@ -5,184 +5,113 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Pedido de Indumentaria</title>
 <style>
-  /* ===================== CSS (estilo tipo Tally / tu captura) ===================== */
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
   :root{
     --borde:#d1d5db; --borde-fuerte:#111827; --texto:#111827; --texto-suave:#6b7280;
     --badge:#e5e7eb; --badge-txt:#6b7280; --bg-hover:#f9fafb; --peligro:#ef4444;
     --exito-bg:#ecfdf5; --exito-borde:#a7f3d0; --error-bg:#fef2f2; --error-borde:#fecaca;
   }
   *{box-sizing:border-box}
-  body{
-    margin:0; background:#fff; color:var(--texto);
-    font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
-    font-size:14px; line-height:1.45;
-  }
-  .wrap{max-width:760px; margin:0 auto; padding:32px 20px 80px;}
-  h1{font-size:22px; margin:0 0 4px;}
-  .sub{color:var(--texto-suave); margin:0 0 28px;}
-
+  body{margin:0;background:#fff;color:var(--texto);
+    font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:14px;line-height:1.45;}
+  .wrap{max-width:760px;margin:0 auto;padding:32px 20px 80px;}
+  h1{font-size:22px;margin:0 0 4px;}
+  .sub{color:var(--texto-suave);margin:0 0 28px;}
   .campo{margin-bottom:22px;}
-  label.etiqueta{display:flex; align-items:center; gap:6px; font-weight:600; margin-bottom:8px;}
-  .req{background:var(--badge); color:var(--badge-txt); border-radius:999px;
-       font-size:11px; font-weight:700; padding:1px 7px; line-height:1.6;}
-
+  label.etiqueta{display:flex;align-items:center;gap:6px;font-weight:600;margin-bottom:8px;}
+  .req{background:var(--badge);color:var(--badge-txt);border-radius:999px;font-size:11px;font-weight:700;padding:1px 7px;line-height:1.6;}
   .input-wrap{position:relative;}
   input[type=text],input[type=tel],input[type=email],input[type=number],textarea,select{
-    width:100%; border:1px solid var(--borde); border-radius:8px;
-    padding:11px 12px; font:inherit; color:var(--texto); background:#fff; outline:none;
-    transition:border-color .15s, box-shadow .15s;
-  }
-  input:focus,textarea:focus,select:focus{
-    border-color:var(--borde-fuerte); box-shadow:0 0 0 3px rgba(17,24,39,.08);
-  }
-  .input-wrap .ic{position:absolute; right:12px; top:50%; transform:translateY(-50%);
-    color:#9ca3af; pointer-events:none; display:flex; align-items:center;}
+    width:100%;border:1px solid var(--borde);border-radius:8px;padding:11px 12px;font:inherit;color:var(--texto);background:#fff;outline:none;transition:border-color .15s,box-shadow .15s;}
+  input:focus,textarea:focus,select:focus{border-color:var(--borde-fuerte);box-shadow:0 0 0 3px rgba(17,24,39,.08);}
+  .input-wrap .ic{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#9ca3af;pointer-events:none;display:flex;align-items:center;}
   .input-wrap.has-ic input{padding-right:38px;}
-  textarea{resize:vertical; min-height:96px;}
-
-  .fila2{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
-  @media(max-width:560px){ .fila2{grid-template-columns:1fr;} }
-
-  /* dropzone */
-  .dropzone{border:1px dashed var(--borde); border-radius:8px; padding:26px 16px;
-    text-align:center; color:var(--texto-suave); cursor:pointer; transition:background .15s,border-color .15s;}
-  .dropzone:hover,.dropzone.drag{background:var(--bg-hover); border-color:#9ca3af;}
-  .dropzone svg{display:block; margin:0 auto 8px; color:#9ca3af;}
-  .dropzone .hint{font-size:12px; margin-top:8px;}
-  .lista-archivos{margin-top:10px; display:flex; flex-wrap:wrap; gap:6px;}
-  .chip{background:#f3f4f6; border:1px solid var(--borde); border-radius:6px;
-    padding:3px 8px; font-size:12px; display:inline-flex; gap:6px; align-items:center;}
-  .chip button{border:none; background:none; cursor:pointer; color:var(--peligro); font-size:14px; line-height:1;}
-
-  /* radio-cards (Tipo de diseño) */
-  .cards{display:flex; flex-direction:column; gap:10px;}
-  .card{display:flex; align-items:center; gap:10px; border:1px solid var(--borde);
-    border-radius:8px; padding:11px 12px; cursor:pointer; transition:border-color .15s, box-shadow .15s;}
+  textarea{resize:vertical;min-height:96px;}
+  .fila2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  @media(max-width:560px){.fila2{grid-template-columns:1fr;}}
+  .dropzone{border:1px dashed var(--borde);border-radius:8px;padding:26px 16px;text-align:center;color:var(--texto-suave);cursor:pointer;transition:background .15s,border-color .15s;}
+  .dropzone:hover,.dropzone.drag{background:var(--bg-hover);border-color:#9ca3af;}
+  .dropzone svg{display:block;margin:0 auto 8px;color:#9ca3af;}
+  .dropzone .hint{font-size:12px;margin-top:8px;}
+  .lista-archivos{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{background:#f3f4f6;border:1px solid var(--borde);border-radius:6px;padding:3px 8px;font-size:12px;display:inline-flex;gap:6px;align-items:center;}
+  .chip button{border:none;background:none;cursor:pointer;color:var(--peligro);font-size:14px;line-height:1;}
+  .cards{display:flex;flex-direction:column;gap:10px;}
+  .card{display:flex;align-items:center;gap:10px;border:1px solid var(--borde);border-radius:8px;padding:11px 12px;cursor:pointer;transition:border-color .15s,box-shadow .15s;}
   .card:hover{background:var(--bg-hover);}
-  .card input{position:absolute; opacity:0; pointer-events:none;}
-  .card .key{background:#374151; color:#fff; border-radius:5px; width:22px; height:22px;
-    display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex:none;}
-  .card:has(input:checked){border-color:var(--borde-fuerte); box-shadow:0 0 0 3px rgba(17,24,39,.08);}
-
-  /* select con chevron + placeholder gris cuando está vacío */
+  .card input{position:absolute;opacity:0;pointer-events:none;}
+  .card .key{background:#374151;color:#fff;border-radius:5px;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none;}
+  .card:has(input:checked){border-color:var(--borde-fuerte);box-shadow:0 0 0 3px rgba(17,24,39,.08);}
   .select-wrap{position:relative;}
-  .select-wrap select{appearance:none; -webkit-appearance:none; padding-right:32px; cursor:pointer;}
+  .select-wrap select{appearance:none;-webkit-appearance:none;padding-right:32px;cursor:pointer;}
   .select-wrap select.vacio{color:#9ca3af;}
-  .select-wrap .ch{position:absolute; right:10px; top:50%; transform:translateY(-50%);
-    color:#6b7280; pointer-events:none; display:flex;}
-
-  /* ===== Tabla de líneas ===== */
+  .select-wrap .ch{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#6b7280;pointer-events:none;display:flex;}
   .tabla{margin-top:6px;}
-  .thead,.fila{display:grid; gap:10px; align-items:start;
-    grid-template-columns:1.1fr 1fr .7fr 1.2fr .7fr 28px;}
+  .thead,.fila{display:grid;gap:10px;align-items:start;grid-template-columns:1.1fr 1fr .7fr 1.2fr .7fr 28px;}
   .thead{padding:0 0 8px;}
-  .th{font-weight:600; display:flex; align-items:center; gap:4px; color:var(--texto);}
+  .th{font-weight:600;display:flex;align-items:center;gap:4px;color:var(--texto);}
   .fila{padding-bottom:10px;}
-  .btn-quitar{border:none; background:none; cursor:pointer; color:#9ca3af; font-size:20px;
-    line-height:1; padding:8px 0 0; align-self:start; transition:color .15s;}
+  .btn-quitar{border:none;background:none;cursor:pointer;color:#9ca3af;font-size:20px;line-height:1;padding:8px 0 0;align-self:start;transition:color .15s;}
   .btn-quitar:hover{color:var(--peligro);}
   @media(max-width:680px){
     .thead{display:none;}
-    .fila{grid-template-columns:1fr 1fr; }
+    .fila{grid-template-columns:1fr 1fr;}
     .fila > *:nth-child(4){grid-column:1 / -1;}
     .fila > *:nth-child(5){grid-column:1 / span 1;}
-    .fila > .btn-quitar{grid-column:2 / -1; justify-self:end;}
+    .fila > .btn-quitar{grid-column:2 / -1;justify-self:end;}
   }
-
-  .acciones-tabla{display:flex; align-items:center; gap:14px; margin-top:6px; flex-wrap:wrap;}
-  .btn-line{border:1px solid var(--borde); background:#fff; border-radius:8px; padding:8px 14px;
-    font:inherit; font-weight:600; cursor:pointer; display:inline-flex; gap:6px; align-items:center;}
+  .acciones-tabla{display:flex;align-items:center;gap:14px;margin-top:6px;flex-wrap:wrap;}
+  .btn-line{border:1px solid var(--borde);background:#fff;border-radius:8px;padding:8px 14px;font:inherit;font-weight:600;cursor:pointer;display:inline-flex;gap:6px;align-items:center;}
   .btn-line:hover{background:var(--bg-hover);}
-  .btn-line:disabled{opacity:.5; cursor:not-allowed;}
-  .contador{color:var(--texto-suave); font-size:13px;}
-
-  /* ===== Resumen de pago (total + anticipo + saldo) ===== */
-  .resumen{border-top:1px solid #e5e7eb; margin-top:18px; padding-top:14px;
-    display:flex; flex-direction:column; gap:8px;}
-  .res-titulo{font-weight:600; color:var(--texto-suave); font-size:12px;
-    text-transform:uppercase; letter-spacing:.04em; margin-bottom:2px;}
-  .res-linea{display:flex; justify-content:space-between; align-items:baseline; gap:10px; font-size:15px;}
-  .res-linea .lbl{display:flex; flex-direction:column;}
-  .res-linea small{font-weight:400; color:var(--texto-suave); font-size:12px;}
-  .res-total{font-weight:700; font-size:18px;}
+  .btn-line:disabled{opacity:.5;cursor:not-allowed;}
+  .contador{color:var(--texto-suave);font-size:13px;}
+  .resumen{border-top:1px solid #e5e7eb;margin-top:18px;padding-top:14px;display:flex;flex-direction:column;gap:8px;}
+  .res-titulo{font-weight:600;color:var(--texto-suave);font-size:12px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px;}
+  .res-linea{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:15px;}
+  .res-linea .lbl{display:flex;flex-direction:column;}
+  .res-linea small{font-weight:400;color:var(--texto-suave);font-size:12px;}
+  .res-total{font-weight:700;font-size:18px;}
   .res-total span:last-child{font-variant-numeric:tabular-nums;}
-  .res-anticipo{background:var(--exito-bg); border:1px solid var(--exito-borde); border-radius:8px;
-    padding:10px 12px; color:#065f46; font-weight:700;}
+  .res-anticipo{background:var(--exito-bg);border:1px solid var(--exito-borde);border-radius:8px;padding:10px 12px;color:#065f46;font-weight:700;}
   .res-anticipo small{color:#047857;}
   .res-anticipo span:last-child{font-variant-numeric:tabular-nums;}
   .res-saldo{font-weight:600;}
   .res-saldo span:last-child{font-variant-numeric:tabular-nums;}
-
-  .nota-envio{margin-top:12px; background:#fffbeb; border:1px solid #fde68a; border-radius:8px;
-    padding:11px 13px; color:#92400e; font-size:13px; line-height:1.55;}
+  .nota-envio{margin-top:12px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:11px 13px;color:#92400e;font-size:13px;line-height:1.55;}
   .nota-envio strong{color:#78350f;}
-
-  .btn-enviar{margin-top:24px; background:var(--borde-fuerte); color:#fff; border:none;
-    border-radius:8px; padding:13px 22px; font:inherit; font-weight:600; cursor:pointer; width:100%;}
+  .btn-enviar{margin-top:24px;background:var(--borde-fuerte);color:#fff;border:none;border-radius:8px;padding:13px 22px;font:inherit;font-weight:600;cursor:pointer;width:100%;}
   .btn-enviar:hover{background:#000;}
-  .btn-enviar:disabled{opacity:.6; cursor:not-allowed;}
-
-  .msg{margin-top:16px; padding:12px 14px; border-radius:8px; display:none;}
-  .msg.ok{display:block; background:var(--exito-bg); border:1px solid var(--exito-borde); color:#065f46;}
-  .msg.err{display:block; background:var(--error-bg); border:1px solid var(--error-borde); color:#991b1b;}
+  .btn-enviar:disabled{opacity:.6;cursor:not-allowed;}
+  .msg{margin-top:16px;padding:12px 14px;border-radius:8px;display:none;}
+  .msg.ok{display:block;background:var(--exito-bg);border:1px solid var(--exito-borde);color:#065f46;}
+  .msg.err{display:block;background:var(--error-bg);border:1px solid var(--error-borde);color:#991b1b;}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Pedido de Indumentaria</h1>
   <p class="sub">Completá tus datos, cargá el diseño y detallá cada prenda. El total y el anticipo se calculan solos.</p>
-
   <form id="form" novalidate>
-    <!-- Datos del cliente -->
     <div class="campo">
       <label class="etiqueta" for="nombre">Nombre y Apellido <span class="req">*</span></label>
-      <div class="input-wrap has-ic">
-        <input id="nombre" type="text" required placeholder="" />
-        <span class="ic">Aa</span>
-      </div>
+      <div class="input-wrap has-ic"><input id="nombre" type="text" required /><span class="ic">Aa</span></div>
     </div>
-
     <div class="campo">
       <label class="etiqueta" for="telefono">Teléfono <span class="req">*</span></label>
-      <div class="input-wrap has-ic">
-        <input id="telefono" type="tel" required placeholder="" />
-        <span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
-      </div>
+      <div class="input-wrap has-ic"><input id="telefono" type="tel" required /><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span></div>
     </div>
-
     <div class="campo">
       <label class="etiqueta" for="email">Email <span class="req">*</span></label>
-      <div class="input-wrap has-ic">
-        <input id="email" type="email" required placeholder="" />
-        <span class="ic">@</span>
-      </div>
+      <div class="input-wrap has-ic"><input id="email" type="email" required /><span class="ic">@</span></div>
     </div>
-
     <div class="fila2">
-      <div class="campo">
-        <label class="etiqueta" for="direccion">Dirección de Entrega <span class="req">*</span></label>
-        <div class="input-wrap has-ic"><input id="direccion" type="text" required /><span class="ic">Aa</span></div>
-      </div>
-      <div class="campo">
-        <label class="etiqueta" for="cp">Código Postal <span class="req">*</span></label>
-        <div class="input-wrap has-ic"><input id="cp" type="text" required /><span class="ic">Aa</span></div>
-      </div>
+      <div class="campo"><label class="etiqueta" for="direccion">Dirección de Entrega <span class="req">*</span></label><div class="input-wrap has-ic"><input id="direccion" type="text" required /><span class="ic">Aa</span></div></div>
+      <div class="campo"><label class="etiqueta" for="cp">Código Postal <span class="req">*</span></label><div class="input-wrap has-ic"><input id="cp" type="text" required /><span class="ic">Aa</span></div></div>
     </div>
-
     <div class="fila2">
-      <div class="campo">
-        <label class="etiqueta" for="localidad">Localidad <span class="req">*</span></label>
-        <div class="input-wrap has-ic"><input id="localidad" type="text" required /><span class="ic">Aa</span></div>
-      </div>
-      <div class="campo">
-        <label class="etiqueta" for="provincia">Provincia <span class="req">*</span></label>
-        <div class="input-wrap has-ic"><input id="provincia" type="text" required /><span class="ic">Aa</span></div>
-      </div>
+      <div class="campo"><label class="etiqueta" for="localidad">Localidad <span class="req">*</span></label><div class="input-wrap has-ic"><input id="localidad" type="text" required /><span class="ic">Aa</span></div></div>
+      <div class="campo"><label class="etiqueta" for="provincia">Provincia <span class="req">*</span></label><div class="input-wrap has-ic"><input id="provincia" type="text" required /><span class="ic">Aa</span></div></div>
     </div>
-
-    <!-- Archivos de diseño -->
     <div class="campo">
       <label class="etiqueta">Archivos del diseño (PDF, PNG) <span class="req">*</span></label>
       <div class="dropzone" id="dropzone" tabindex="0">
@@ -193,8 +122,6 @@
       </div>
       <div class="lista-archivos" id="listaArchivos"></div>
     </div>
-
-    <!-- Tipo de diseño -->
     <div class="campo">
       <label class="etiqueta">Tipo de diseño <span class="req">*</span></label>
       <div class="cards" id="tipoDiseno">
@@ -203,254 +130,147 @@
         <label class="card"><input type="radio" name="td" value="C"><span class="key">C</span> Necesito que el diseñador cree el diseño</label>
       </div>
     </div>
-
-    <!-- Tabla de líneas -->
     <div class="campo">
       <label class="etiqueta">Detalle del pedido <span class="req">*</span></label>
       <div class="tabla">
-        <div class="thead">
-          <div class="th">Tipo</div><div class="th">Género</div><div class="th">Talle</div>
-          <div class="th">Nombre</div><div class="th">Cantidad</div><div></div>
-        </div>
+        <div class="thead"><div class="th">Tipo</div><div class="th">Género</div><div class="th">Talle</div><div class="th">Nombre</div><div class="th">Cantidad</div><div></div></div>
         <div id="filas"></div>
       </div>
       <div class="acciones-tabla">
         <button type="button" class="btn-line" id="btnAgregar">+ Agregar línea</button>
         <span class="contador" id="contador"></span>
       </div>
-
-      <!-- Resumen de pago -->
       <div class="resumen">
         <div class="res-titulo">Resumen de pago</div>
-        <div class="res-linea res-total">
-          <span class="lbl">Total del pedido</span>
-          <span id="total">$0</span>
-        </div>
-        <div class="res-linea res-anticipo">
-          <span class="lbl">Anticipo 50%<small>a pagar para iniciar la producción</small></span>
-          <span id="anticipo">$0</span>
-        </div>
-        <div class="res-linea res-saldo">
-          <span class="lbl">Saldo 50%<small>a pagar al finalizar el pedido</small></span>
-          <span id="saldo">$0</span>
-        </div>
+        <div class="res-linea res-total"><span class="lbl">Total del pedido</span><span id="total">$0</span></div>
+        <div class="res-linea res-anticipo"><span class="lbl">Anticipo 50%<small>a pagar para iniciar la producción</small></span><span id="anticipo">$0</span></div>
+        <div class="res-linea res-saldo"><span class="lbl">Saldo 50%<small>a pagar al finalizar el pedido</small></span><span id="saldo">$0</span></div>
       </div>
-
-      <div class="nota-envio">
-        📦 <strong>Importante:</strong> el costo de envío <strong>no</strong> está incluido en el total ni en el anticipo.
-        Se calcula al momento del despacho y lo abona el cliente <strong>junto con el pago final (saldo)</strong>.
-      </div>
+      <div class="nota-envio">📦 <strong>Importante:</strong> el costo de envío <strong>no</strong> está incluido en el total ni en el anticipo. Se calcula al momento del despacho y lo abona el cliente <strong>junto con el pago final (saldo)</strong>.</div>
     </div>
-
     <button type="submit" class="btn-enviar" id="btnEnviar">Enviar pedido</button>
     <div class="msg" id="msg"></div>
   </form>
 </div>
-
 <script>
 /* ============================ CONFIG ============================ */
-// 👉 PEGÁ ACÁ la URL de tu Web App de Apps Script (termina en /exec)
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxR8bxuPQY8vmWOYJHHiUIqYGGV9HvDTjxkp8Rpd_sX2yB0K18eETTV8gHQ5Tm-fshXDw/exec";
-
-// 👉 EDITÁ los precios por tipo de prenda (moneda = la que uses)
 const PRECIOS = {
-  "Campera":              45000,
-  "Remera":               18000,
-  "Musculosa":            12000,
-  "Musculosa Deportiva":  14000,
-  "Short Deportivo":      16000
+  "Campera":45000,"Remera":18000,"Musculosa":12000,"Musculosa Deportiva":14000,"Short Deportivo":16000
 };
-const MONEDA = "$";                 // prefijo de moneda
-const MAX_FILAS = 20;               // límite de líneas del pedido
-const MAX_MB = 10;                  // límite por archivo
-const PCT_ANTICIPO = 0.5;           // 50% de anticipo
+const MONEDA="$", MAX_FILAS=20, MAX_MB=10, PCT_ANTICIPO=0.5;
+const TIPOS=Object.keys(PRECIOS), GENEROS=["Femenino","Masculino"], TALLES=["40","42","44","46"];
 
-// Opciones de los selects (las claves de PRECIOS alimentan el select "Tipo")
-const TIPOS   = Object.keys(PRECIOS);
-const GENEROS = ["Femenino","Masculino"];
-const TALLES  = ["40","42","44","46"];
+let archivosSel=[];
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const money=n=>MONEDA+Number(n||0).toLocaleString("es-AR",{maximumFractionDigits:0});
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const chevron=`<span class="ch"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>`;
+const opts=arr=>arr.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("");
+const pintarPlaceholder=sel=>sel.classList.toggle("vacio",sel.value==="");
 
-/* ============================ ESTADO ARCHIVOS ============================ */
-let archivosSel = [];   // [{file, nombre, tipo}]
-
-/* ============================ UTILIDADES ============================ */
-const $  = (s,r=document)=>r.querySelector(s);
-const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
-const money = n => MONEDA + Number(n||0).toLocaleString("es-AR",{maximumFractionDigits:0});
-const esc = s => String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const chevron = `<span class="ch"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>`;
-const opts = arr => arr.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("");
-// Pone/quita el estilo "gris placeholder" según si el select tiene valor
-const pintarPlaceholder = sel => sel.classList.toggle("vacio", sel.value === "");
-
-/* ============================ FILAS DINÁMICAS ============================ */
 function crearFila(){
-  if ($$("#filas .fila").length >= MAX_FILAS) return;
-  const div = document.createElement("div");
-  div.className = "fila";
-  // Cada select arranca con un placeholder disabled+selected => queda vacío hasta que elija
-  div.innerHTML = `
+  if($$("#filas .fila").length>=MAX_FILAS)return;
+  const div=document.createElement("div"); div.className="fila";
+  div.innerHTML=`
     <div class="select-wrap"><select class="f-tipo"><option value="" disabled selected>Elegí tipo…</option>${opts(TIPOS)}</select>${chevron}</div>
     <div class="select-wrap"><select class="f-genero"><option value="" disabled selected>Elegí género…</option>${opts(GENEROS)}</select>${chevron}</div>
     <div class="select-wrap"><select class="f-talle"><option value="" disabled selected>Elegí talle…</option>${opts(TALLES)}</select>${chevron}</div>
     <textarea class="f-nombre" placeholder="Nombre / número a estampar (opcional)"></textarea>
     <input class="f-cant" type="number" min="1" step="1" value="" placeholder="#" />
     <button type="button" class="btn-quitar" title="Quitar línea">×</button>`;
-  div.querySelector(".btn-quitar").addEventListener("click",()=>{ div.remove(); recalcular(); });
-  div.addEventListener("input", recalcular);
-  div.addEventListener("change", e=>{ if(e.target.tagName==="SELECT") pintarPlaceholder(e.target); recalcular(); });
-  // estado inicial de los placeholders
-  $$(".select-wrap select", div).forEach(pintarPlaceholder);
-  $("#filas").appendChild(div);
-  recalcular();
+  div.querySelector(".btn-quitar").addEventListener("click",()=>{div.remove();recalcular();});
+  div.addEventListener("input",recalcular);
+  div.addEventListener("change",e=>{if(e.target.tagName==="SELECT")pintarPlaceholder(e.target);recalcular();});
+  $$(".select-wrap select",div).forEach(pintarPlaceholder);
+  $("#filas").appendChild(div); recalcular();
 }
-
 function recalcular(){
-  let total = 0;
+  let total=0;
   $$("#filas .fila").forEach(f=>{
-    const tipo = f.querySelector(".f-tipo").value;          // "" si no eligió => 0
-    const cant = Math.max(0, parseInt(f.querySelector(".f-cant").value,10) || 0);
-    total += (PRECIOS[tipo] || 0) * cant;
+    const tipo=f.querySelector(".f-tipo").value;
+    const cant=Math.max(0,parseInt(f.querySelector(".f-cant").value,10)||0);
+    total+=(PRECIOS[tipo]||0)*cant;
   });
-  const anticipo = Math.round(total * PCT_ANTICIPO);
-  const saldo    = total - anticipo;                         // cierra exacto con el total
-  $("#total").textContent    = money(total);
-  $("#anticipo").textContent = money(anticipo);
-  $("#saldo").textContent    = money(saldo);
-  const n = $$("#filas .fila").length;
-  $("#contador").textContent = `${n} de ${MAX_FILAS} líneas`;
-  $("#btnAgregar").disabled = n >= MAX_FILAS;
+  const anticipo=Math.round(total*PCT_ANTICIPO), saldo=total-anticipo;
+  $("#total").textContent=money(total); $("#anticipo").textContent=money(anticipo); $("#saldo").textContent=money(saldo);
+  const n=$$("#filas .fila").length;
+  $("#contador").textContent=`${n} de ${MAX_FILAS} líneas`;
+  $("#btnAgregar").disabled=n>=MAX_FILAS;
 }
-
-/* ============================ ARCHIVOS (dropzone) ============================ */
 function pintarArchivos(){
-  const cont = $("#listaArchivos"); cont.innerHTML = "";
+  const cont=$("#listaArchivos"); cont.innerHTML="";
   archivosSel.forEach((a,i)=>{
-    const chip = document.createElement("span");
-    chip.className = "chip";
-    chip.innerHTML = `${esc(a.nombre)} <button type="button" data-i="${i}" title="Quitar">×</button>`;
-    chip.querySelector("button").addEventListener("click",()=>{ archivosSel.splice(i,1); pintarArchivos(); });
+    const chip=document.createElement("span"); chip.className="chip";
+    chip.innerHTML=`${esc(a.nombre)} <button type="button" data-i="${i}" title="Quitar">×</button>`;
+    chip.querySelector("button").addEventListener("click",()=>{archivosSel.splice(i,1);pintarArchivos();});
     cont.appendChild(chip);
   });
 }
 function agregarArchivos(list){
-  for (const f of list){
-    if (!/\.(pdf|png)$/i.test(f.name) && !/application\/pdf|image\/png/.test(f.type)){
-      alert(`Archivo ignorado (solo PDF/PNG): ${f.name}`); continue;
-    }
-    if (f.size > MAX_MB*1024*1024){ alert(`Archivo muy grande (máx ${MAX_MB} MB): ${f.name}`); continue; }
-    archivosSel.push({file:f, nombre:f.name, tipo:f.type || "application/octet-stream"});
+  for(const f of list){
+    if(!/\.(pdf|png)$/i.test(f.name)&&!/application\/pdf|image\/png/.test(f.type)){alert(`Archivo ignorado (solo PDF/PNG): ${f.name}`);continue;}
+    if(f.size>MAX_MB*1024*1024){alert(`Archivo muy grande (máx ${MAX_MB} MB): ${f.name}`);continue;}
+    archivosSel.push({file:f,nombre:f.name,tipo:f.type||"application/octet-stream"});
   }
   pintarArchivos();
 }
-const dz = $("#dropzone"), fileInput = $("#archivos");
+const dz=$("#dropzone"),fileInput=$("#archivos");
 dz.addEventListener("click",()=>fileInput.click());
-dz.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault();fileInput.click();} });
+dz.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();fileInput.click();}});
 fileInput.addEventListener("change",e=>agregarArchivos(e.target.files));
 ["dragenter","dragover"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add("drag");}));
 ["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove("drag");}));
 dz.addEventListener("drop",e=>agregarArchivos(e.dataTransfer.files));
+const fileToBase64=file=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(",")[1]);r.onerror=rej;r.readAsDataURL(file);});
+function mostrarMsg(tipo,texto){const m=$("#msg");m.className="msg "+tipo;m.textContent=texto;m.scrollIntoView({behavior:"smooth",block:"nearest"});}
 
-const fileToBase64 = file => new Promise((res,rej)=>{
-  const r = new FileReader();
-  r.onload = ()=>res(String(r.result).split(",")[1]); // quita el prefijo data:...;base64,
-  r.onerror = rej;
-  r.readAsDataURL(file);
-});
+$("#form").addEventListener("submit",async(e)=>{
+  e.preventDefault(); $("#msg").className="msg";
+  const req=["nombre","telefono","email","direccion","cp","localidad","provincia"];
+  for(const id of req){const el=$("#"+id);if(!el.value.trim()){el.focus();return mostrarMsg("err","Completá todos los campos obligatorios (*).");}}
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test($("#email").value.trim()))return mostrarMsg("err","El email no es válido.");
+  const td=$('input[name="td"]:checked'); if(!td)return mostrarMsg("err","Elegí el tipo de diseño (A, B o C).");
+  if(!archivosSel.length)return mostrarMsg("err","Adjuntá al menos un archivo de diseño (PDF o PNG).");
 
-/* ============================ ENVÍO ============================ */
-function mostrarMsg(tipo,texto){
-  const m = $("#msg"); m.className = "msg "+tipo; m.textContent = texto;
-  m.scrollIntoView({behavior:"smooth",block:"nearest"});
-}
-
-$("#form").addEventListener("submit", async (e)=>{
-  e.preventDefault();
-  $("#msg").className = "msg";
-
-  // validación básica de datos del cliente
-  const req = ["nombre","telefono","email","direccion","cp","localidad","provincia"];
-  for (const id of req){
-    const el = $("#"+id);
-    if (!el.value.trim()){ el.focus(); return mostrarMsg("err","Completá todos los campos obligatorios (*)."); }
-  }
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test($("#email").value.trim()))
-    return mostrarMsg("err","El email no es válido.");
-
-  const td = $('input[name="td"]:checked');
-  if (!td) return mostrarMsg("err","Elegí el tipo de diseño (A, B o C).");
-  if (!archivosSel.length) return mostrarMsg("err","Adjuntá al menos un archivo de diseño (PDF o PNG).");
-
-  // ----- armado y validación de líneas (filas vacías se ignoran; parciales dan error por nº) -----
-  const filasDom = $$("#filas .fila");
-  const lineas = [];
-  for (let i=0;i<filasDom.length;i++){
-    const f      = filasDom[i];
-    const tipo   = f.querySelector(".f-tipo").value;
-    const genero = f.querySelector(".f-genero").value;
-    const talle  = f.querySelector(".f-talle").value;
-    const nombre = f.querySelector(".f-nombre").value.trim();
-    const cantRaw= f.querySelector(".f-cant").value.trim();
-
-    if (tipo === ""){
-      // fila sin tipo: si tiene CUALQUIER otro dato cargado, avisamos; si no, es una fila sobra => ignorar
-      const algoMas = genero!=="" || talle!=="" || cantRaw!=="" || nombre!=="";
-      if (algoMas) return mostrarMsg("err",`La línea ${i+1} no tiene tipo de prenda elegido. Completala o vaciála por completo.`);
+  const filasDom=$$("#filas .fila"), lineas=[];
+  for(let i=0;i<filasDom.length;i++){
+    const f=filasDom[i];
+    const tipo=f.querySelector(".f-tipo").value, genero=f.querySelector(".f-genero").value, talle=f.querySelector(".f-talle").value;
+    const nombre=f.querySelector(".f-nombre").value.trim(), cantRaw=f.querySelector(".f-cant").value.trim();
+    if(tipo===""){
+      const algoMas=genero!==""||talle!==""||cantRaw!==""||nombre!=="";
+      if(algoMas)return mostrarMsg("err",`La línea ${i+1} no tiene tipo de prenda elegido. Completala o vaciála por completo.`);
       continue;
     }
-    // tipo elegido => el resto de la prenda es obligatorio
-    if (!genero) return mostrarMsg("err",`Elegí el género en la línea ${i+1}.`);
-    if (!talle)  return mostrarMsg("err",`Elegí el talle en la línea ${i+1}.`);
-    const cant = parseInt(cantRaw,10);
-    if (!cant || cant < 1) return mostrarMsg("err",`Poné una cantidad válida (mínimo 1) en la línea ${i+1}.`);
-
-    const pu = PRECIOS[tipo] || 0;
-    lineas.push({ tipo, genero, talle, nombre, cantidad:cant, precioUnitario:pu, subtotal:pu*cant });
+    if(!genero)return mostrarMsg("err",`Elegí el género en la línea ${i+1}.`);
+    if(!talle)return mostrarMsg("err",`Elegí el talle en la línea ${i+1}.`);
+    const cant=parseInt(cantRaw,10); if(!cant||cant<1)return mostrarMsg("err",`Poné una cantidad válida (mínimo 1) en la línea ${i+1}.`);
+    const pu=PRECIOS[tipo]||0;
+    lineas.push({tipo,genero,talle,nombre,cantidad:cant,precioUnitario:pu,subtotal:pu*cant});
   }
-  if (!lineas.length) return mostrarMsg("err","Cargá al menos una prenda completa (tipo, género, talle y cantidad).");
+  if(!lineas.length)return mostrarMsg("err","Cargá al menos una prenda completa (tipo, género, talle y cantidad).");
+  const totalPedido=lineas.reduce((s,l)=>s+l.subtotal,0);
+  const anticipo=Math.round(totalPedido*PCT_ANTICIPO), saldo=totalPedido-anticipo;
 
-  const totalPedido = lineas.reduce((s,l)=>s+l.subtotal,0);
-  const anticipo    = Math.round(totalPedido * PCT_ANTICIPO);
-  const saldo       = totalPedido - anticipo;
-
-  // archivos a base64
-  const btn = $("#btnEnviar"); btn.disabled = true; const txtOrig = btn.textContent; btn.textContent = "Enviando…";
-  try {
-    const archivos = await Promise.all(archivosSel.map(async a=>({
-      nombre:a.nombre, tipo:a.tipo, contenido:await fileToBase64(a.file)
-    })));
-
-    const payload = {
-      idPedido: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
-      nombre:$("#nombre").value.trim(), telefono:$("#telefono").value.trim(), email:$("#email").value.trim(),
-      direccion:$("#direccion").value.trim(), cp:$("#cp").value.trim(),
-      localidad:$("#localidad").value.trim(), provincia:$("#provincia").value.trim(),
-      tipoDiseno:td.value, archivos, lineas,
-      totalPedido, anticipo, saldo          // <- anticipo/saldo viajan en el JSON (el .gs actual los ignora sin romper)
+  const btn=$("#btnEnviar"); btn.disabled=true; const txtOrig=btn.textContent; btn.textContent="Enviando…";
+  try{
+    const archivos=await Promise.all(archivosSel.map(async a=>({nombre:a.nombre,tipo:a.tipo,contenido:await fileToBase64(a.file)})));
+    const payload={
+      nombre:$("#nombre").value.trim(),telefono:$("#telefono").value.trim(),email:$("#email").value.trim(),
+      direccion:$("#direccion").value.trim(),cp:$("#cp").value.trim(),localidad:$("#localidad").value.trim(),provincia:$("#provincia").value.trim(),
+      tipoDiseno:td.value,archivos,lineas,totalPedido,anticipo,saldo
     };
-
-    // ⚠️ text/plain evita el preflight CORS de Apps Script
-    const res = await fetch(SCRIPT_URL,{
-      method:"POST",
-      headers:{ "Content-Type":"text/plain;charset=utf-8" },
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json().catch(()=>({ok:false,error:"Respuesta no JSON (revisá despliegue/permisos)."}));
-    if (!data.ok) throw new Error(data.error || "Error desconocido del servidor.");
-
-    mostrarMsg("ok", `✅ Pedido enviado. Nº ${data.idPedido} — ${data.filas} línea(s). Total ${money(totalPedido)} · Anticipo a pagar ahora ${money(anticipo)}.`);
-    $("#form").reset(); archivosSel = []; pintarArchivos();
-    $("#filas").innerHTML = ""; crearFila();   // una fila nueva, toda vacía con placeholders
-  } catch(err){
-    mostrarMsg("err","❌ No se pudo enviar: "+err.message);
-  } finally {
-    btn.disabled = false; btn.textContent = txtOrig;
-  }
+    const res=await fetch(SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
+    const data=await res.json().catch(()=>({ok:false,error:"Respuesta no JSON (revisá despliegue/permisos)."}));
+    if(!data.ok)throw new Error(data.error||"Error desconocido del servidor.");
+    mostrarMsg("ok",`✅ Pedido enviado. Nº ${data.numeroPedido} — Total ${money(totalPedido)} · Anticipo a pagar ahora: ${money(anticipo)}.`);
+    $("#form").reset(); archivosSel=[]; pintarArchivos(); $("#filas").innerHTML=""; crearFila();
+  }catch(err){ mostrarMsg("err","❌ No se pudo enviar: "+err.message); }
+  finally{ btn.disabled=false; btn.textContent=txtOrig; }
 });
-
-/* ============================ INIT ============================ */
-$("#btnAgregar").addEventListener("click", crearFila);
-crearFila();   // una fila inicial vacía
+$("#btnAgregar").addEventListener("click",crearFila);
+crearFila();
 </script>
 </body>
 </html>
