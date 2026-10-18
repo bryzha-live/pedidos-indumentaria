@@ -7,14 +7,14 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-  /* ===== VARIABLES SEMÁNTICAS (modo claro) ===== */
+  /* ===== VARIABLES SEMÁNTICAS (modo claro) =====
+     OJO: el header y el logo NO usan variables de tema: son color FIJO
+     (declarados más abajo en .logo-bar / .logo-svg) para que no cambien
+     entre claro y oscuro. Las variables de abajo rigen SOLO la columna
+     central y los componentes del formulario. */
   :root{
     --pattern-base:#16656a;
     --pattern-accent:#103f46;
-
-    --logo-bar-bg:#142529;
-    --logo-color:#b8860b;
-    --logo-bar-line:rgba(184,134,11,.30);
 
     --page-bg:#ffffff;
     --shell-shadow:0 0 0 1px rgba(0,0,0,.04), 0 30px 60px -20px rgba(0,0,0,.35);
@@ -39,13 +39,9 @@
     --nota-bg:#fffbeb; --nota-borde:#fde68a; --nota-txt:#92400e; --nota-strong:#78350f;
   }
 
-  /* ===== MODO OSCURO AUTOMÁTICO ===== */
+  /* ===== MODO OSCURO AUTOMÁTICO (componentes; header/logo quedan fijos) ===== */
   @media(prefers-color-scheme:dark){
     :root{
-      --logo-bar-bg:#0e1b1e;
-      --logo-color:#d4a843;
-      --logo-bar-line:rgba(212,168,67,.28);
-
       --page-bg:#0f172a;
       --shell-shadow:0 0 0 1px rgba(255,255,255,.05), 0 30px 60px -20px rgba(0,0,0,.7);
 
@@ -92,28 +88,33 @@
   }
   @media(min-width:920px){ .shell{ border-radius:14px; margin:28px auto; min-height:calc(100vh - 56px); } }
 
-  /* ===== BLOQUE DEL LOGO ===== */
+  /* ===== BLOQUE DEL LOGO — COLOR FIJO EN AMBOS TEMAS ===== */
   .logo-bar{
-    background:var(--logo-bar-bg);
-    border-bottom:1px solid var(--logo-bar-line);
-    padding:32px 24px 54px;
+    background:#142529;                              /* fijo, no variable */
+    border-bottom:1px solid rgba(184,134,11,.30);    /* hilo dorado, fijo */
+    padding:26px 24px 30px;
     display:flex;
     align-items:center;
     justify-content:center;
-    color:var(--logo-color);          /* currentColor del SVG hereda de acá */
   }
-  /* El tamaño lo controla solo CSS; el viewBox lo encuadra getBBox() en runtime.
-     width:auto + viewBox recortado => el logo mantiene su proporción real y se ve completo. */
+  /* El logo es focal: cubre ~2/3 del ancho del header. height:auto respeta
+     la proporción REAL que fija getBBox() en runtime. */
   .logo-svg{
-    height:clamp(46px, 7vw, 86px);
-    width:auto;
-    max-width:92%;
+    width:70%;            /* >= 2/3 del header. Si querés 2/3 de ALTO en vez de ancho,
+                             cambiá esto por: height:66%; width:auto; */
+    height:auto;
     display:block;
   }
+  /* Pintamos TODO el logo de dorado FIJO por especificidad (dos clases vencen
+     a la clase única del <style> interno de CorelDRAW). Cubre fill (texto+símbolo)
+     y stroke (contorno del símbolo). No hace falta editar el SVG. */
+  .logo-svg .fil0,
+  .logo-svg .fil1 { fill:#b8860b; }
+  .logo-svg .str0 { stroke:#b8860b; }
 
   /* ===== CONTENEDOR DEL FORMULARIO ===== */
-  .wrap{ padding:8px 28px 80px; }
-  @media(max-width:560px){ .wrap{ padding:8px 18px 64px; } }
+  .wrap{ padding:10px 28px 80px; }
+  @media(max-width:560px){ .wrap{ padding:10px 18px 64px; } }
 
   h1{font-size:22px;margin:0 0 4px;color:var(--texto);}
   .sub{color:var(--texto-suave);margin:0 0 28px;}
@@ -214,16 +215,18 @@
 
 <div class="shell">
 
-  <!-- ===== BLOQUE DEL LOGO ===== -->
+  <!-- ===== BLOQUE DEL LOGO (banda sólida, color fijo, logo dorado focal) ===== -->
   <header class="logo-bar">
-    <svg class="logo-svg" xmlns="http://www.w3.org/2000/svg"
+ 
+    <svg class="logo-svg" xmlns="http://www.w3.org/2000/svg" xml:space="preserve"
+         viewBox="1300 -40 9850 4040" preserveAspectRatio="xMidYMid meet"
          style="shape-rendering:geometricPrecision;text-rendering:geometricPrecision;image-rendering:optimizeQuality;fill-rule:evenodd;clip-rule:evenodd"
-         viewBox="0 0 21590 27940" role="img" aria-label="Logo">
+         role="img" aria-label="Logo Ryzha Live">
       <defs>
         <style type="text/css"><![CDATA[
-          .str0 {stroke:currentColor;stroke-width:17.64;stroke-miterlimit:22.9256}
-          .fil1 {fill:currentColor}
-          .fil0 {fill:currentColor;fill-rule:nonzero}
+          .str0 {stroke:#373435;stroke-width:17.64;stroke-miterlimit:22.9256}
+          .fil1 {fill:#373435}
+          .fil0 {fill:#373435;fill-rule:nonzero}
         ]]></style>
       </defs>
       <g id="TEXTO">
@@ -246,23 +249,6 @@
         <path class="fil1 str0" d="M4156.95 3315.03c0,0 -34.56,-67.2 -105.6,-44.16 -71.04,23.04 23.04,238.06 238.07,583.65 215.03,345.59 347.51,478.06 437.74,495.34 90.23,17.28 180.47,-36.48 180.47,-36.48 0,0 57.6,-51.84 297.59,-61.44 239.99,-9.6 88.31,-168.94 -99.84,-247.66 -188.15,-78.72 -716.13,-455.02 -716.13,-455.02 0,0 -174.71,-145.92 -232.3,-234.23z"/>
       </g>
     </svg>
-
-    <!-- Encuadre exacto del logo: mide el bounding box real y reescribe el viewBox.
-         Corre inline justo después del <svg> para minimizar el flash del fallback. -->
-    <script>
-    (function(){
-      var svg = document.querySelector('.logo-svg');
-      if(!svg) return;
-      try{
-        var b = svg.getBBox();                       // geometría real, sin adivinar
-        if(b && b.width > 0 && b.height > 0){
-          var p = Math.max(b.width, b.height) * 0.02 + 30;  // margen (cubre el stroke 17.64)
-          svg.setAttribute('viewBox',
-            (b.x - p) + ' ' + (b.y - p) + ' ' + (b.width + 2*p) + ' ' + (b.height + 2*p));
-        }
-      }catch(e){ /* sin getBBox queda el viewBox original: íntegro, solo más chico */ }
-    })();
-    </script>
   </header>
 
   <!-- ===== FORMULARIO ===== -->
@@ -368,6 +354,16 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"
 const chevron=`<span class="ch"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>`;
 const opts=arr=>arr.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("");
 const pintarPlaceholder=sel=>sel.classList.toggle("vacio",sel.value==="");
+
+function ajustarLogo(){
+  const svg=document.querySelector('.logo-svg'); if(!svg) return;
+  let b; try{ b=svg.getBBox(); }catch(e){ return; }
+  if(!b || b.width<=0 || b.height<=0) return;     // aún sin layout -> reintentaré en load
+  const pad=80;                                    // margen en unidades del viewBox (cubre stroke 17.64)
+  svg.setAttribute('viewBox', `${(b.x-pad).toFixed(0)} ${(b.y-pad).toFixed(0)} ${(b.width+pad*2).toFixed(0)} ${(b.height+pad*2).toFixed(0)}`);
+}
+ajustarLogo();                                     // intento inmediato
+window.addEventListener('load', ajustarLogo);      // por si el layout cerró recién
 
 function crearFila(){
   if($$("#filas .fila").length>=MAX_FILAS)return;
