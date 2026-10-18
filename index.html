@@ -105,7 +105,7 @@
   /* El tamaño lo controla solo CSS; el viewBox lo encuadra getBBox() en runtime.
      width:auto + viewBox recortado => el logo mantiene su proporción real y se ve completo. */
   .logo-svg{
-    height:clamp(46px, 7vw, 74px);
+    height:clamp(46px, 7vw, 86px);
     width:auto;
     max-width:92%;
     display:block;
@@ -216,16 +216,6 @@
 
   <!-- ===== BLOQUE DEL LOGO ===== -->
   <header class="logo-bar">
-    <!--
-      SVG real del logo. Cambios respecto al original de CorelDRAW:
-      - Quitados <?xml?>, <!DOCTYPE>, comentario Creator, width/height en mm y namespaces no usados.
-      - fill/stroke hardcodeados (#373435) reemplazados por currentColor => toma el dorado de --logo-color
-        y se adapta solo a modo claro/oscuro. Se CONSERVA fill-rule:nonzero en .fil0 y el evenodd del root
-        (crítico para que los agujeros de P/R/O/etc. no se rellenen).
-      - viewBox original dejado como FALLBACK (logo íntegro pero chico si no hay JS);
-        el <script> de abajo lo reemplaza por el bounding box exacto vía getBBox().
-      - NO se tocó ningún atributo d= (geometría idéntica al original).
-    -->
     <svg class="logo-svg" xmlns="http://www.w3.org/2000/svg"
          style="shape-rendering:geometricPrecision;text-rendering:geometricPrecision;image-rendering:optimizeQuality;fill-rule:evenodd;clip-rule:evenodd"
          viewBox="0 0 21590 27940" role="img" aria-label="Logo">
