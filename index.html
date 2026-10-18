@@ -20,6 +20,7 @@
   .campo{margin-bottom:22px;}
   label.etiqueta{display:flex;align-items:center;gap:6px;font-weight:600;margin-bottom:8px;}
   .req{background:var(--badge);color:var(--badge-txt);border-radius:999px;font-size:11px;font-weight:700;padding:1px 7px;line-height:1.6;}
+  .badge-opt{background:#f3f4f6;color:var(--texto-suave);border-radius:999px;font-size:11px;font-weight:600;padding:1px 7px;line-height:1.6;}
   .input-wrap{position:relative;}
   input[type=text],input[type=tel],input[type=email],input[type=number],textarea,select{
     width:100%;border:1px solid var(--borde);border-radius:8px;padding:11px 12px;font:inherit;color:var(--texto);background:#fff;outline:none;transition:border-color .15s,box-shadow .15s;}
@@ -46,6 +47,8 @@
   .select-wrap select{appearance:none;-webkit-appearance:none;padding-right:32px;cursor:pointer;}
   .select-wrap select.vacio{color:#9ca3af;}
   .select-wrap .ch{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#6b7280;pointer-events:none;display:flex;}
+  /* wrapper neutro para celdas que contienen input/textarea (necesario p/ el rótulo en movil) */
+  .cel{display:block;}
   .tabla{margin-top:6px;}
   .thead,.fila{display:grid;gap:10px;align-items:start;grid-template-columns:1.1fr 1fr .7fr 1.2fr .7fr 28px;}
   .thead{padding:0 0 8px;}
@@ -53,7 +56,7 @@
   .fila{padding-bottom:10px;}
   .btn-quitar{border:none;background:none;cursor:pointer;color:#9ca3af;font-size:20px;line-height:1;padding:8px 0 0;align-self:start;transition:color .15s;}
   .btn-quitar:hover{color:var(--peligro);}
-  /* ===== Móvil: rótulo por campo (data-label) ===== */
+  /* ===== Movil: rotulo por campo via data-label (solo en DIVs, nunca en input/textarea) ===== */
   @media(max-width:680px){
     .thead{display:none;}
     .fila{grid-template-columns:1fr 1fr;}
@@ -88,7 +91,6 @@
   .msg{margin-top:16px;padding:12px 14px;border-radius:8px;display:none;}
   .msg.ok{display:block;background:var(--exito-bg);border:1px solid var(--exito-borde);color:#065f46;}
   .msg.err{display:block;background:var(--error-bg);border:1px solid var(--error-borde);color:#991b1b;}
-  /* honeypot: invisible para humanos, presente en el DOM para bots */
   .hp-field{position:absolute!important;left:-9999px!important;top:-9999px!important;width:1px;height:1px;overflow:hidden;}
 </style>
 </head>
@@ -97,7 +99,7 @@
   <h1>Pedido de Indumentaria</h1>
   <p class="sub">Completá tus datos, cargá el diseño y detallá cada prenda. El total y el anticipo se calculan solos.</p>
   <form id="form" novalidate>
-    <!-- Honeypot anti-bot (no tocar, no se ve) -->
+    <!-- Honeypot anti-bot (invisible para humanos) -->
     <div class="hp-field" aria-hidden="true">
       <label>Dejá este campo vacío<input type="text" name="hp" id="hp" tabindex="-1" autocomplete="off"></label>
     </div>
@@ -122,6 +124,8 @@
       <div class="campo"><label class="etiqueta" for="localidad">Localidad <span class="req">*</span></label><div class="input-wrap has-ic"><input id="localidad" type="text" required /><span class="ic">Aa</span></div></div>
       <div class="campo"><label class="etiqueta" for="provincia">Provincia <span class="req">*</span></label><div class="input-wrap has-ic"><input id="provincia" type="text" required /><span class="ic">Aa</span></div></div>
     </div>
+
+    <!-- Archivos del diseño (OBLIGATORIO, PDF/PNG) -->
     <div class="campo">
       <label class="etiqueta">Archivos del diseño (PDF, PNG) <span class="req">*</span></label>
       <div class="dropzone" id="dropzone" tabindex="0">
@@ -132,6 +136,19 @@
       </div>
       <div class="lista-archivos" id="listaArchivos"></div>
     </div>
+
+    <!-- Logos de Sponsors (OPCIONAL, solo PNG) -->
+    <div class="campo">
+      <label class="etiqueta">Logos de Sponsors <span class="badge-opt">opcional</span></label>
+      <div class="dropzone" id="dropzoneLogos" tabindex="0">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <div>Hacé clic para elegir logos o arrastrá aquí</div>
+        <div class="hint">Solo PNG. Opcional — logos de sponsors que acompañan al diseño principal.</div>
+        <input type="file" id="logos" accept=".png,image/png" multiple hidden />
+      </div>
+      <div class="lista-archivos" id="listaLogos"></div>
+    </div>
+
     <div class="campo">
       <label class="etiqueta">Tipo de diseño <span class="req">*</span></label>
       <div class="cards" id="tipoDiseno">
@@ -174,7 +191,7 @@ const TALLES  = ["40","42","44","46"];
 
 const MONEDA="$", MAX_FILAS=20, MAX_MB=10;
 
-let archivosSel=[];
+let archivosSel=[], logosSel=[];
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const money=n=>MONEDA+Number(n||0).toLocaleString("es-AR",{maximumFractionDigits:0});
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -185,12 +202,14 @@ const pintarPlaceholder=sel=>sel.classList.toggle("vacio",sel.value==="");
 function crearFila(){
   if($$("#filas .fila").length>=MAX_FILAS)return;
   const div=document.createElement("div"); div.className="fila";
+  // TODAS las celdas son DIVs con data-label => el rotulo movil (::before) funciona siempre,
+  // inclusive en input/textarea (donde ::before NO se renderiza si van sueltos).
   div.innerHTML=`
     <div class="select-wrap" data-label="Tipo"><select class="f-tipo"><option value="" disabled selected>Elegí tipo…</option>${opts(TIPOS)}</select>${chevron}</div>
     <div class="select-wrap" data-label="Género"><select class="f-genero"><option value="" disabled selected>Elegí género…</option>${opts(GENEROS)}</select>${chevron}</div>
     <div class="select-wrap" data-label="Talle"><select class="f-talle"><option value="" disabled selected>Elegí talle…</option>${opts(TALLES)}</select>${chevron}</div>
-    <textarea class="f-nombre" data-label="Nombre" placeholder="Nombre / número a estampar (opcional)"></textarea>
-    <input class="f-cant" data-label="Cantidad" type="number" min="1" step="1" value="" />
+    <div class="cel" data-label="Nombre"><textarea class="f-nombre" placeholder="Nombre / número a estampar (opcional)"></textarea></div>
+    <div class="cel" data-label="Cantidad"><input class="f-cant" type="number" min="1" step="1" value="" placeholder="Unidades" /></div>
     <button type="button" class="btn-quitar" title="Quitar línea">×</button>`;
   div.querySelector(".btn-quitar").addEventListener("click",()=>{div.remove();refrescar();});
   div.addEventListener("input",refrescar);
@@ -199,13 +218,12 @@ function crearFila(){
   $("#filas").appendChild(div); refrescar();
 }
 
-// ---- Analiza filas: válidas para cotizar/enviar + errores de filas parciales ----
 function analizarFilas(){
   const dom=$$("#filas .fila"), validas=[], errores=[];
   dom.forEach((f,i)=>{
     const tipo=f.querySelector(".f-tipo").value, genero=f.querySelector(".f-genero").value, talle=f.querySelector(".f-talle").value;
     const nombre=f.querySelector(".f-nombre").value.trim(), cantRaw=f.querySelector(".f-cant").value.trim();
-    if(tipo===""&&genero===""&&talle===""&&cantRaw===""&&nombre==="") return; // fila vacía => ignorar
+    if(tipo===""&&genero===""&&talle===""&&cantRaw===""&&nombre==="") return;
     if(tipo===""){ errores.push(`La línea ${i+1} tiene datos pero no elegiste el tipo de prenda.`); return; }
     if(!genero){ errores.push(`Elegí el género en la línea ${i+1}.`); return; }
     if(!talle){ errores.push(`Elegí el talle en la línea ${i+1}.`); return; }
@@ -216,7 +234,6 @@ function analizarFilas(){
   return {validas,errores};
 }
 
-// ---- Refresco UI: contador + cotización al servidor (con debounce) ----
 let timerCot=null, reqCot=0;
 function refrescar(){
   const n=$$("#filas .fila").length;
@@ -233,7 +250,7 @@ async function cotizar(){
   try{
     const res=await fetch(SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({accion:"cotizar",lineas:validas})});
     const d=await res.json();
-    if(mi!==reqCot) return;                 // respuesta vieja => descartar
+    if(mi!==reqCot) return;
     if(d&&d.ok) setResumen(d.total,d.anticipo,d.saldo,false);
     else $("#resumen").classList.add("stale");
   }catch(e){ $("#resumen").classList.add("stale"); }
@@ -243,42 +260,51 @@ function setResumen(t,a,s,stale){
   $("#resumen").classList.toggle("stale",!!stale);
 }
 
-/* ============================ ARCHIVOS (dropzone) ============================ */
-function pintarArchivos(){
-  const cont=$("#listaArchivos"); cont.innerHTML="";
-  archivosSel.forEach((a,i)=>{
-    const chip=document.createElement("span"); chip.className="chip";
-    chip.innerHTML=`${esc(a.nombre)} <button type="button" data-i="${i}" title="Quitar">×</button>`;
-    chip.querySelector("button").addEventListener("click",()=>{archivosSel.splice(i,1);pintarArchivos();});
-    cont.appendChild(chip);
-  });
-}
-function agregarArchivos(list){
-  for(const f of list){
-    if(!/\.(pdf|png)$/i.test(f.name)&&!/application\/pdf|image\/png/.test(f.type)){alert(`Archivo ignorado (solo PDF/PNG): ${f.name}`);continue;}
-    if(f.size>MAX_MB*1024*1024){alert(`Archivo muy grande (máx ${MAX_MB} MB): ${f.name}`);continue;}
-    archivosSel.push({file:f,nombre:f.name,tipo:f.type||"application/octet-stream"});
+/* ============================ DROPZONES (factoria: diseno + logos) ============================ */
+function montarDropzone(cfg){
+  const dz=$(cfg.dzSel), inp=$(cfg.inpSel), lista=$(cfg.listaSel), arr=cfg.arreglo;
+  const extRe  = cfg.soloPng ? /\.png$/i          : /\.(pdf|png)$/i;
+  const mimeRe = cfg.soloPng ? /^image\/png$/     : /application\/pdf|image\/png/;
+  const tipoTxt= cfg.soloPng ? "PNG"              : "PDF/PNG";
+  function pintar(){
+    lista.innerHTML="";
+    arr.forEach((a,i)=>{
+      const chip=document.createElement("span"); chip.className="chip";
+      chip.innerHTML=`${esc(a.nombre)} <button type="button" title="Quitar">×</button>`;
+      chip.querySelector("button").addEventListener("click",()=>{arr.splice(i,1);pintar();});
+      lista.appendChild(chip);
+    });
   }
-  pintarArchivos();
+  function agregar(list){
+    for(const f of list){
+      if(!extRe.test(f.name) && !mimeRe.test(f.type||"")){ alert(`Archivo ignorado (solo ${tipoTxt}): ${f.name}`); continue; }
+      if(f.size>MAX_MB*1024*1024){ alert(`Archivo muy grande (máx ${MAX_MB} MB): ${f.name}`); continue; }
+      arr.push({file:f,nombre:f.name,tipo:f.type||(cfg.soloPng?"image/png":"application/octet-stream")});
+    }
+    pintar();
+  }
+  dz.addEventListener("click",()=>inp.click());
+  dz.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();inp.click();}});
+  inp.addEventListener("change",e=>{agregar(e.target.files); inp.value="";}); // inp.value="" permite re-elegir el mismo archivo
+  ["dragenter","dragover"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add("drag");}));
+  ["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove("drag");}));
+  dz.addEventListener("drop",e=>agregar(e.dataTransfer.files));
+  return { pintar, limpiar(){ arr.length=0; pintar(); } };
 }
-const dz=$("#dropzone"),fileInput=$("#archivos");
-dz.addEventListener("click",()=>fileInput.click());
-dz.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();fileInput.click();}});
-fileInput.addEventListener("change",e=>agregarArchivos(e.target.files));
-["dragenter","dragover"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add("drag");}));
-["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove("drag");}));
-dz.addEventListener("drop",e=>agregarArchivos(e.dataTransfer.files));
+const dzDiseno = montarDropzone({dzSel:"#dropzone",      inpSel:"#archivos", listaSel:"#listaArchivos", arreglo:archivosSel, soloPng:false});
+const dzLogos  = montarDropzone({dzSel:"#dropzoneLogos", inpSel:"#logos",    listaSel:"#listaLogos",    arreglo:logosSel,   soloPng:true });
+
 const fileToBase64=file=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(",")[1]);r.onerror=rej;r.readAsDataURL(file);});
 function mostrarMsg(tipo,texto){const m=$("#msg");m.className="msg "+tipo;m.textContent=texto;m.scrollIntoView({behavior:"smooth",block:"nearest"});}
 
-/* ============================ ENVÍO ============================ */
+/* ============================ ENVIO ============================ */
 $("#form").addEventListener("submit",async(e)=>{
   e.preventDefault(); $("#msg").className="msg";
   const req=["nombre","telefono","email","direccion","cp","localidad","provincia"];
   for(const id of req){const el=$("#"+id);if(!el.value.trim()){el.focus();return mostrarMsg("err","Completá todos los campos obligatorios (*).");}}
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test($("#email").value.trim()))return mostrarMsg("err","El email no es válido.");
   const td=$('input[name="td"]:checked'); if(!td)return mostrarMsg("err","Elegí el tipo de diseño (A, B o C).");
-  if(!archivosSel.length)return mostrarMsg("err","Adjuntá al menos un archivo de diseño (PDF o PNG).");
+  if(!archivosSel.length)return mostrarMsg("err","Adjuntá al menos un archivo de diseño (PDF o PNG)."); // logos NO son obligatorios
 
   const {validas,errores}=analizarFilas();
   if(errores.length) return mostrarMsg("err",errores[0]);
@@ -287,18 +313,19 @@ $("#form").addEventListener("submit",async(e)=>{
   const btn=$("#btnEnviar"); btn.disabled=true; const txtOrig=btn.textContent; btn.textContent="Enviando…";
   try{
     const archivos=await Promise.all(archivosSel.map(async a=>({nombre:a.nombre,tipo:a.tipo,contenido:await fileToBase64(a.file)})));
-    // NOTA: NO se mandan precios ni totales => el servidor los calcula y manda de vuelta lo guardado.
+    const logos   =await Promise.all(logosSel.map(async a=>({nombre:a.nombre,tipo:a.tipo,contenido:await fileToBase64(a.file)})));
+    // NO se mandan precios ni totales => el servidor los calcula y devuelve lo guardado.
     const payload={
       accion:"enviar", hp:$("#hp").value,
       nombre:$("#nombre").value.trim(),telefono:$("#telefono").value.trim(),email:$("#email").value.trim(),
       direccion:$("#direccion").value.trim(),cp:$("#cp").value.trim(),localidad:$("#localidad").value.trim(),provincia:$("#provincia").value.trim(),
-      tipoDiseno:td.value,archivos,lineas:validas
+      tipoDiseno:td.value,archivos,logos,lineas:validas
     };
     const res=await fetch(SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
     const data=await res.json().catch(()=>({ok:false,error:"Respuesta no JSON (revisá despliegue/permisos)."}));
     if(!data.ok)throw new Error(data.error||"Error desconocido del servidor.");
     mostrarMsg("ok",`✅ Pedido enviado. Nº ${data.numeroPedido} — Total ${money(data.total)} · Anticipo a pagar ahora: ${money(data.anticipo)}.`);
-    $("#form").reset(); archivosSel=[]; pintarArchivos(); $("#filas").innerHTML=""; crearFila();
+    $("#form").reset(); dzDiseno.limpiar(); dzLogos.limpiar(); $("#filas").innerHTML=""; crearFila();
   }catch(err){ mostrarMsg("err","❌ No se pudo enviar: "+err.message); }
   finally{ btn.disabled=false; btn.textContent=txtOrig; }
 });
