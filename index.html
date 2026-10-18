@@ -53,19 +53,22 @@
   .fila{padding-bottom:10px;}
   .btn-quitar{border:none;background:none;cursor:pointer;color:#9ca3af;font-size:20px;line-height:1;padding:8px 0 0;align-self:start;transition:color .15s;}
   .btn-quitar:hover{color:var(--peligro);}
+  /* ===== Móvil: rótulo por campo (data-label) ===== */
   @media(max-width:680px){
     .thead{display:none;}
     .fila{grid-template-columns:1fr 1fr;}
+    .fila > *[data-label]::before{content:attr(data-label);display:block;font-size:11px;font-weight:600;color:var(--texto-suave);margin-bottom:3px;}
     .fila > *:nth-child(4){grid-column:1 / -1;}
     .fila > *:nth-child(5){grid-column:1 / span 1;}
-    .fila > .btn-quitar{grid-column:2 / -1;justify-self:end;}
+    .fila > .btn-quitar{grid-column:2 / -1;justify-self:end;padding-top:0;}
   }
   .acciones-tabla{display:flex;align-items:center;gap:14px;margin-top:6px;flex-wrap:wrap;}
   .btn-line{border:1px solid var(--borde);background:#fff;border-radius:8px;padding:8px 14px;font:inherit;font-weight:600;cursor:pointer;display:inline-flex;gap:6px;align-items:center;}
   .btn-line:hover{background:var(--bg-hover);}
   .btn-line:disabled{opacity:.5;cursor:not-allowed;}
   .contador{color:var(--texto-suave);font-size:13px;}
-  .resumen{border-top:1px solid #e5e7eb;margin-top:18px;padding-top:14px;display:flex;flex-direction:column;gap:8px;}
+  .resumen{border-top:1px solid #e5e7eb;margin-top:18px;padding-top:14px;display:flex;flex-direction:column;gap:8px;transition:opacity .2s;}
+  .resumen.stale{opacity:.45;}
   .res-titulo{font-weight:600;color:var(--texto-suave);font-size:12px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px;}
   .res-linea{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:15px;}
   .res-linea .lbl{display:flex;flex-direction:column;}
@@ -85,6 +88,8 @@
   .msg{margin-top:16px;padding:12px 14px;border-radius:8px;display:none;}
   .msg.ok{display:block;background:var(--exito-bg);border:1px solid var(--exito-borde);color:#065f46;}
   .msg.err{display:block;background:var(--error-bg);border:1px solid var(--error-borde);color:#991b1b;}
+  /* honeypot: invisible para humanos, presente en el DOM para bots */
+  .hp-field{position:absolute!important;left:-9999px!important;top:-9999px!important;width:1px;height:1px;overflow:hidden;}
 </style>
 </head>
 <body>
@@ -92,6 +97,11 @@
   <h1>Pedido de Indumentaria</h1>
   <p class="sub">Completá tus datos, cargá el diseño y detallá cada prenda. El total y el anticipo se calculan solos.</p>
   <form id="form" novalidate>
+    <!-- Honeypot anti-bot (no tocar, no se ve) -->
+    <div class="hp-field" aria-hidden="true">
+      <label>Dejá este campo vacío<input type="text" name="hp" id="hp" tabindex="-1" autocomplete="off"></label>
+    </div>
+
     <div class="campo">
       <label class="etiqueta" for="nombre">Nombre y Apellido <span class="req">*</span></label>
       <div class="input-wrap has-ic"><input id="nombre" type="text" required /><span class="ic">Aa</span></div>
@@ -140,7 +150,7 @@
         <button type="button" class="btn-line" id="btnAgregar">+ Agregar línea</button>
         <span class="contador" id="contador"></span>
       </div>
-      <div class="resumen">
+      <div class="resumen" id="resumen">
         <div class="res-titulo">Resumen de pago</div>
         <div class="res-linea res-total"><span class="lbl">Total del pedido</span><span id="total">$0</span></div>
         <div class="res-linea res-anticipo"><span class="lbl">Anticipo 50%<small>a pagar para iniciar la producción</small></span><span id="anticipo">$0</span></div>
@@ -154,12 +164,15 @@
 </div>
 <script>
 /* ============================ CONFIG ============================ */
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzB5P7I0bmYOuFZJQPHmaAdWSZ71gWVnr0oOTQmQ_z91BFpFXfKGJM-3I2Ank4oPBKEvw/exec";
-const PRECIOS = {
-  "Campera":45000,"Remera":18000,"Musculosa":12000,"Musculosa Deportiva":14000,"Short Deportivo":16000
-};
-const MONEDA="$", MAX_FILAS=20, MAX_MB=10, PCT_ANTICIPO=0.5;
-const TIPOS=Object.keys(PRECIOS), GENEROS=["Femenino","Masculino"], TALLES=["40","42","44","46"];
+const SCRIPT_URL = "PEGAR_ACA_LA_URL_DEL_WEB_APP/exec";
+
+// SOLO los nombres de producto (para el select). Los PRECIOS viven en el servidor.
+// ⚠️ Estas claves deben coincidir con las de PRECIOS en Código.gs.
+const TIPOS   = ["Campera","Remera","Musculosa","Musculosa Deportiva","Short Deportivo"];
+const GENEROS = ["Femenino","Masculino"];
+const TALLES  = ["40","42","44","46"];
+
+const MONEDA="$", MAX_FILAS=20, MAX_MB=10;
 
 let archivosSel=[];
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
@@ -173,31 +186,64 @@ function crearFila(){
   if($$("#filas .fila").length>=MAX_FILAS)return;
   const div=document.createElement("div"); div.className="fila";
   div.innerHTML=`
-    <div class="select-wrap"><select class="f-tipo"><option value="" disabled selected>Elegí tipo…</option>${opts(TIPOS)}</select>${chevron}</div>
-    <div class="select-wrap"><select class="f-genero"><option value="" disabled selected>Elegí género…</option>${opts(GENEROS)}</select>${chevron}</div>
-    <div class="select-wrap"><select class="f-talle"><option value="" disabled selected>Elegí talle…</option>${opts(TALLES)}</select>${chevron}</div>
-    <textarea class="f-nombre" placeholder="Nombre / número a estampar (opcional)"></textarea>
-    <input class="f-cant" type="number" min="1" step="1" value="" placeholder="#" />
+    <div class="select-wrap" data-label="Tipo"><select class="f-tipo"><option value="" disabled selected>Elegí tipo…</option>${opts(TIPOS)}</select>${chevron}</div>
+    <div class="select-wrap" data-label="Género"><select class="f-genero"><option value="" disabled selected>Elegí género…</option>${opts(GENEROS)}</select>${chevron}</div>
+    <div class="select-wrap" data-label="Talle"><select class="f-talle"><option value="" disabled selected>Elegí talle…</option>${opts(TALLES)}</select>${chevron}</div>
+    <textarea class="f-nombre" data-label="Nombre" placeholder="Nombre / número a estampar (opcional)"></textarea>
+    <input class="f-cant" data-label="Cantidad" type="number" min="1" step="1" value="" />
     <button type="button" class="btn-quitar" title="Quitar línea">×</button>`;
-  div.querySelector(".btn-quitar").addEventListener("click",()=>{div.remove();recalcular();});
-  div.addEventListener("input",recalcular);
-  div.addEventListener("change",e=>{if(e.target.tagName==="SELECT")pintarPlaceholder(e.target);recalcular();});
+  div.querySelector(".btn-quitar").addEventListener("click",()=>{div.remove();refrescar();});
+  div.addEventListener("input",refrescar);
+  div.addEventListener("change",e=>{if(e.target.tagName==="SELECT")pintarPlaceholder(e.target);refrescar();});
   $$(".select-wrap select",div).forEach(pintarPlaceholder);
-  $("#filas").appendChild(div); recalcular();
+  $("#filas").appendChild(div); refrescar();
 }
-function recalcular(){
-  let total=0;
-  $$("#filas .fila").forEach(f=>{
-    const tipo=f.querySelector(".f-tipo").value;
-    const cant=Math.max(0,parseInt(f.querySelector(".f-cant").value,10)||0);
-    total+=(PRECIOS[tipo]||0)*cant;
+
+// ---- Analiza filas: válidas para cotizar/enviar + errores de filas parciales ----
+function analizarFilas(){
+  const dom=$$("#filas .fila"), validas=[], errores=[];
+  dom.forEach((f,i)=>{
+    const tipo=f.querySelector(".f-tipo").value, genero=f.querySelector(".f-genero").value, talle=f.querySelector(".f-talle").value;
+    const nombre=f.querySelector(".f-nombre").value.trim(), cantRaw=f.querySelector(".f-cant").value.trim();
+    if(tipo===""&&genero===""&&talle===""&&cantRaw===""&&nombre==="") return; // fila vacía => ignorar
+    if(tipo===""){ errores.push(`La línea ${i+1} tiene datos pero no elegiste el tipo de prenda.`); return; }
+    if(!genero){ errores.push(`Elegí el género en la línea ${i+1}.`); return; }
+    if(!talle){ errores.push(`Elegí el talle en la línea ${i+1}.`); return; }
+    const cant=parseInt(cantRaw,10);
+    if(!cant||cant<1){ errores.push(`Poné una cantidad válida (mínimo 1) en la línea ${i+1}.`); return; }
+    validas.push({tipo,genero,talle,nombre,cantidad:cant});
   });
-  const anticipo=Math.round(total*PCT_ANTICIPO), saldo=total-anticipo;
-  $("#total").textContent=money(total); $("#anticipo").textContent=money(anticipo); $("#saldo").textContent=money(saldo);
+  return {validas,errores};
+}
+
+// ---- Refresco UI: contador + cotización al servidor (con debounce) ----
+let timerCot=null, reqCot=0;
+function refrescar(){
   const n=$$("#filas .fila").length;
   $("#contador").textContent=`${n} de ${MAX_FILAS} líneas`;
   $("#btnAgregar").disabled=n>=MAX_FILAS;
+  clearTimeout(timerCot);
+  timerCot=setTimeout(cotizar,450);
 }
+async function cotizar(){
+  const {validas}=analizarFilas();
+  if(!validas.length){ setResumen(0,0,0,false); return; }
+  const mi=++reqCot;
+  $("#resumen").classList.add("stale");
+  try{
+    const res=await fetch(SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({accion:"cotizar",lineas:validas})});
+    const d=await res.json();
+    if(mi!==reqCot) return;                 // respuesta vieja => descartar
+    if(d&&d.ok) setResumen(d.total,d.anticipo,d.saldo,false);
+    else $("#resumen").classList.add("stale");
+  }catch(e){ $("#resumen").classList.add("stale"); }
+}
+function setResumen(t,a,s,stale){
+  $("#total").textContent=money(t); $("#anticipo").textContent=money(a); $("#saldo").textContent=money(s);
+  $("#resumen").classList.toggle("stale",!!stale);
+}
+
+/* ============================ ARCHIVOS (dropzone) ============================ */
 function pintarArchivos(){
   const cont=$("#listaArchivos"); cont.innerHTML="";
   archivosSel.forEach((a,i)=>{
@@ -225,6 +271,7 @@ dz.addEventListener("drop",e=>agregarArchivos(e.dataTransfer.files));
 const fileToBase64=file=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(",")[1]);r.onerror=rej;r.readAsDataURL(file);});
 function mostrarMsg(tipo,texto){const m=$("#msg");m.className="msg "+tipo;m.textContent=texto;m.scrollIntoView({behavior:"smooth",block:"nearest"});}
 
+/* ============================ ENVÍO ============================ */
 $("#form").addEventListener("submit",async(e)=>{
   e.preventDefault(); $("#msg").className="msg";
   const req=["nombre","telefono","email","direccion","cp","localidad","provincia"];
@@ -233,38 +280,24 @@ $("#form").addEventListener("submit",async(e)=>{
   const td=$('input[name="td"]:checked'); if(!td)return mostrarMsg("err","Elegí el tipo de diseño (A, B o C).");
   if(!archivosSel.length)return mostrarMsg("err","Adjuntá al menos un archivo de diseño (PDF o PNG).");
 
-  const filasDom=$$("#filas .fila"), lineas=[];
-  for(let i=0;i<filasDom.length;i++){
-    const f=filasDom[i];
-    const tipo=f.querySelector(".f-tipo").value, genero=f.querySelector(".f-genero").value, talle=f.querySelector(".f-talle").value;
-    const nombre=f.querySelector(".f-nombre").value.trim(), cantRaw=f.querySelector(".f-cant").value.trim();
-    if(tipo===""){
-      const algoMas=genero!==""||talle!==""||cantRaw!==""||nombre!=="";
-      if(algoMas)return mostrarMsg("err",`La línea ${i+1} no tiene tipo de prenda elegido. Completala o vaciála por completo.`);
-      continue;
-    }
-    if(!genero)return mostrarMsg("err",`Elegí el género en la línea ${i+1}.`);
-    if(!talle)return mostrarMsg("err",`Elegí el talle en la línea ${i+1}.`);
-    const cant=parseInt(cantRaw,10); if(!cant||cant<1)return mostrarMsg("err",`Poné una cantidad válida (mínimo 1) en la línea ${i+1}.`);
-    const pu=PRECIOS[tipo]||0;
-    lineas.push({tipo,genero,talle,nombre,cantidad:cant,precioUnitario:pu,subtotal:pu*cant});
-  }
-  if(!lineas.length)return mostrarMsg("err","Cargá al menos una prenda completa (tipo, género, talle y cantidad).");
-  const totalPedido=lineas.reduce((s,l)=>s+l.subtotal,0);
-  const anticipo=Math.round(totalPedido*PCT_ANTICIPO), saldo=totalPedido-anticipo;
+  const {validas,errores}=analizarFilas();
+  if(errores.length) return mostrarMsg("err",errores[0]);
+  if(!validas.length) return mostrarMsg("err","Cargá al menos una prenda completa (tipo, género, talle y cantidad).");
 
   const btn=$("#btnEnviar"); btn.disabled=true; const txtOrig=btn.textContent; btn.textContent="Enviando…";
   try{
     const archivos=await Promise.all(archivosSel.map(async a=>({nombre:a.nombre,tipo:a.tipo,contenido:await fileToBase64(a.file)})));
+    // NOTA: NO se mandan precios ni totales => el servidor los calcula y manda de vuelta lo guardado.
     const payload={
+      accion:"enviar", hp:$("#hp").value,
       nombre:$("#nombre").value.trim(),telefono:$("#telefono").value.trim(),email:$("#email").value.trim(),
       direccion:$("#direccion").value.trim(),cp:$("#cp").value.trim(),localidad:$("#localidad").value.trim(),provincia:$("#provincia").value.trim(),
-      tipoDiseno:td.value,archivos,lineas,totalPedido,anticipo,saldo
+      tipoDiseno:td.value,archivos,lineas:validas
     };
     const res=await fetch(SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
     const data=await res.json().catch(()=>({ok:false,error:"Respuesta no JSON (revisá despliegue/permisos)."}));
     if(!data.ok)throw new Error(data.error||"Error desconocido del servidor.");
-    mostrarMsg("ok",`✅ Pedido enviado. Nº ${data.numeroPedido} — Total ${money(totalPedido)} · Anticipo a pagar ahora: ${money(anticipo)}.`);
+    mostrarMsg("ok",`✅ Pedido enviado. Nº ${data.numeroPedido} — Total ${money(data.total)} · Anticipo a pagar ahora: ${money(data.anticipo)}.`);
     $("#form").reset(); archivosSel=[]; pintarArchivos(); $("#filas").innerHTML=""; crearFila();
   }catch(err){ mostrarMsg("err","❌ No se pudo enviar: "+err.message); }
   finally{ btn.disabled=false; btn.textContent=txtOrig; }
