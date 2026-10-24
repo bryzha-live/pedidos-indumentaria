@@ -90,23 +90,14 @@
 
   /* ===== BLOQUE DEL LOGO — COLOR FIJO EN AMBOS TEMAS ===== */
   .logo-bar{
-    background:#142529;                              /* fijo, no variable */
-    border-bottom:1px solid rgba(184,134,11,.30);    /* hilo dorado, fijo */
+    background:#142529;
+    border-bottom:1px solid rgba(184,134,11,.30);
     padding:26px 24px 30px;
     display:flex;
     align-items:center;
     justify-content:center;
   }
-  /* El logo es focal: cubre ~2/3 del ancho del header. height:auto respeta
-     la proporción REAL que fija getBBox() en runtime. */
-  .logo-svg{
-    width:60%;
-    height:auto;
-    display:block;
-  }
-  /* Pintamos TODO el logo de dorado FIJO por especificidad (dos clases vencen
-     a la clase única del <style> interno de CorelDRAW). Cubre fill (texto+símbolo)
-     y stroke (contorno del símbolo). No hace falta editar el SVG. */
+  .logo-svg{ width:70%; height:auto; display:block; }
   .logo-svg .fil0,
   .logo-svg .fil1 { fill:#b8860b; }
   .logo-svg .str0 { stroke:#b8860b; }
@@ -216,7 +207,6 @@
 
   <!-- ===== BLOQUE DEL LOGO (banda sólida, color fijo, logo dorado focal) ===== -->
   <header class="logo-bar">
- 
     <svg class="logo-svg" xmlns="http://www.w3.org/2000/svg" xml:space="preserve"
          viewBox="1300 -40 9850 4040" preserveAspectRatio="xMidYMid meet"
          style="shape-rendering:geometricPrecision;text-rendering:geometricPrecision;image-rendering:optimizeQuality;fill-rule:evenodd;clip-rule:evenodd"
@@ -281,24 +271,26 @@
         <div class="campo"><label class="etiqueta" for="provincia">Provincia <span class="req">*</span></label><div class="input-wrap has-ic"><input id="provincia" type="text" required /><span class="ic">Aa</span></div></div>
       </div>
 
+      <!-- Archivos del diseño (OBLIGATORIO, PDF/PNG/JPG) -->
       <div class="campo">
-        <label class="etiqueta">Archivos del diseño (PDF, PNG) <span class="req">*</span></label>
+        <label class="etiqueta">Archivos del diseño (PDF, PNG, JPG) <span class="req">*</span></label>
         <div class="dropzone" id="dropzone" tabindex="0">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           <div>Hacé clic para elegir un archivo o arrastrá aquí</div>
-          <div class="hint">Límite: 10 MB por archivo. Formatos: PDF, PNG.</div>
-          <input type="file" id="archivos" accept=".pdf,.png,application/pdf,image/png" multiple hidden />
+          <div class="hint">Límite: 10 MB por archivo. Formatos: PDF, PNG, JPG.</div>
+          <input type="file" id="archivos" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg" multiple hidden />
         </div>
         <div class="lista-archivos" id="listaArchivos"></div>
       </div>
 
+      <!-- Logos de Sponsors (OPCIONAL, PNG/JPG) -->
       <div class="campo">
         <label class="etiqueta">Logos de Sponsors <span class="badge-opt">opcional</span></label>
         <div class="dropzone" id="dropzoneLogos" tabindex="0">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           <div>Hacé clic para elegir logos o arrastrá aquí</div>
-          <div class="hint">Solo PNG. Opcional — logos de sponsors que acompañan al diseño principal.</div>
-          <input type="file" id="logos" accept=".png,image/png" multiple hidden />
+          <div class="hint">PNG o JPG. Opcional — logos de sponsors que acompañan al diseño principal.</div>
+          <input type="file" id="logos" accept=".png,.jpg,.jpeg,image/png,image/jpeg" multiple hidden />
         </div>
         <div class="lista-archivos" id="listaLogos"></div>
       </div>
@@ -344,6 +336,10 @@ const TIPOS   = ["Campera","Remera","Musculosa","Musculosa Deportiva","Short Dep
 const GENEROS = ["Femenino","Masculino"];
 const TALLES  = ["40","42","44","46"];
 
+// Mapa extensión -> MIME canónico (usado para derivar la validación de la dropzone
+// y el fallback de tipo cuando el navegador no reporta f.type).
+const MIME_EXT = { pdf:"application/pdf", png:"image/png", jpg:"image/jpeg", jpeg:"image/jpeg" };
+
 const MONEDA="$", MAX_FILAS=20, MAX_MB=10;
 
 let archivosSel=[], logosSel=[];
@@ -354,15 +350,16 @@ const chevron=`<span class="ch"><svg width="14" height="14" viewBox="0 0 24 24" 
 const opts=arr=>arr.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("");
 const pintarPlaceholder=sel=>sel.classList.toggle("vacio",sel.value==="");
 
+/* ===== Recorta el viewBox del logo a su bounding box real (fix CorelDRAW) ===== */
 function ajustarLogo(){
   const svg=document.querySelector('.logo-svg'); if(!svg) return;
   let b; try{ b=svg.getBBox(); }catch(e){ return; }
-  if(!b || b.width<=0 || b.height<=0) return;     // aún sin layout -> reintentaré en load
-  const pad=80;                                    // margen en unidades del viewBox (cubre stroke 17.64)
+  if(!b || b.width<=0 || b.height<=0) return;
+  const pad=80;
   svg.setAttribute('viewBox', `${(b.x-pad).toFixed(0)} ${(b.y-pad).toFixed(0)} ${(b.width+pad*2).toFixed(0)} ${(b.height+pad*2).toFixed(0)}`);
 }
-ajustarLogo();                                     // intento inmediato
-window.addEventListener('load', ajustarLogo);      // por si el layout cerró recién
+ajustarLogo();
+window.addEventListener('load', ajustarLogo);
 
 function crearFila(){
   if($$("#filas .fila").length>=MAX_FILAS)return;
@@ -423,12 +420,15 @@ function setResumen(t,a,s,stale){
   $("#resumen").classList.toggle("stale",!!stale);
 }
 
-/* ============================ DROPZONES ============================ */
+/* ============================ DROPZONES (config por lista de extensiones) ============================ */
+function extDe(nombre){ const m=/\.([a-z0-9]+)$/i.exec(nombre); return m? m[1].toLowerCase() : ""; }
 function montarDropzone(cfg){
   const dz=$(cfg.dzSel), inp=$(cfg.inpSel), lista=$(cfg.listaSel), arr=cfg.arreglo;
-  const extRe  = cfg.soloPng ? /\.png$/i          : /\.(pdf|png)$/i;
-  const mimeRe = cfg.soloPng ? /^image\/png$/     : /application\/pdf|image\/png/;
-  const tipoTxt= cfg.soloPng ? "PNG"              : "PDF/PNG";
+  const exts  = cfg.exts.map(e=>e.toLowerCase());
+  const extRe = new RegExp("\\.("+exts.join("|")+")$","i");                 // ancla al final -> sin falsos positivos por prefijo
+  const mimes = [...new Set(exts.map(e=>MIME_EXT[e]).filter(Boolean))];
+  const mimeRe= new RegExp("^("+mimes.join("|")+")$","i");
+  const tipoTxt = cfg.txt;                                                  // texto humano p/ el alert
   function pintar(){
     lista.innerHTML="";
     arr.forEach((a,i)=>{
@@ -440,9 +440,10 @@ function montarDropzone(cfg){
   }
   function agregar(list){
     for(const f of list){
+      // OR: si falla la extensión PERO el navegador reporta un MIME válido, igual entra (y viceversa).
       if(!extRe.test(f.name) && !mimeRe.test(f.type||"")){ alert(`Archivo ignorado (solo ${tipoTxt}): ${f.name}`); continue; }
       if(f.size>MAX_MB*1024*1024){ alert(`Archivo muy grande (máx ${MAX_MB} MB): ${f.name}`); continue; }
-      arr.push({file:f,nombre:f.name,tipo:f.type||(cfg.soloPng?"image/png":"application/octet-stream")});
+      arr.push({file:f,nombre:f.name,tipo:f.type||(MIME_EXT[extDe(f.name)]||"application/octet-stream")});
     }
     pintar();
   }
@@ -454,8 +455,8 @@ function montarDropzone(cfg){
   dz.addEventListener("drop",e=>agregar(e.dataTransfer.files));
   return { pintar, limpiar(){ arr.length=0; pintar(); } };
 }
-const dzDiseno = montarDropzone({dzSel:"#dropzone",      inpSel:"#archivos", listaSel:"#listaArchivos", arreglo:archivosSel, soloPng:false});
-const dzLogos  = montarDropzone({dzSel:"#dropzoneLogos", inpSel:"#logos",    listaSel:"#listaLogos",    arreglo:logosSel,   soloPng:true });
+const dzDiseno = montarDropzone({dzSel:"#dropzone",      inpSel:"#archivos", listaSel:"#listaArchivos", arreglo:archivosSel, exts:["pdf","png","jpg","jpeg"], txt:"PDF, PNG, JPG"});
+const dzLogos  = montarDropzone({dzSel:"#dropzoneLogos", inpSel:"#logos",    listaSel:"#listaLogos",    arreglo:logosSel,   exts:["png","jpg","jpeg"],         txt:"PNG, JPG"});
 
 const fileToBase64=file=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(",")[1]);r.onerror=rej;r.readAsDataURL(file);});
 function mostrarMsg(tipo,texto){const m=$("#msg");m.className="msg "+tipo;m.textContent=texto;m.scrollIntoView({behavior:"smooth",block:"nearest"});}
@@ -467,7 +468,7 @@ $("#form").addEventListener("submit",async(e)=>{
   for(const id of req){const el=$("#"+id);if(!el.value.trim()){el.focus();return mostrarMsg("err","Completá todos los campos obligatorios (*).");}}
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test($("#email").value.trim()))return mostrarMsg("err","El email no es válido.");
   const td=$('input[name="td"]:checked'); if(!td)return mostrarMsg("err","Elegí el tipo de diseño (A, B o C).");
-  if(!archivosSel.length)return mostrarMsg("err","Adjuntá al menos un archivo de diseño (PDF o PNG).");
+  if(!archivosSel.length)return mostrarMsg("err","Adjuntá al menos un archivo de diseño (PDF, PNG o JPG).");
 
   const {validas,errores}=analizarFilas();
   if(errores.length) return mostrarMsg("err",errores[0]);
